@@ -9,13 +9,13 @@
  * @license MIT
  */
 
-/* global chrome, browser, ga */
+/* global chrome, browser */
 
 /**
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.1.0   2017-01-10
+ * @version 0.2.0   2017-01-10
  * @date    2017-01-10
  * 
  * @returns {Void}
@@ -50,6 +50,12 @@
              * Сохранение значения конфигурации, фильтра, строки.
              */
             case 'config.save':
+                var forceSendStatistics = false;
+                if ('config' === request.bank && 'sendStatistics' === request.name)
+                {
+                    forceSendStatistics = PeshTools.run.config.sendStatistics;
+                }
+
                 PeshTools.run[request.bank][request.name] = request.value;
                 PeshTools.core.fns.configSave();
 
@@ -72,10 +78,11 @@
                     ga_pageview_page += '/' + request.value.toString();
                 }
 
-                PeshTools.core.fns.googleAnalyticsSendEvent('pageview', {
+                PeshTools.core.fns.googleAnalyticsSendEvent({
                     'page': ga_pageview_page,
+                    'referrer': request.referrer,
                     'title': request.title
-                });
+                }, forceSendStatistics);
 
                 break;
 
@@ -126,8 +133,9 @@
                     PeshTools.core.fns.postUpdateHook();
                 }
 
-                PeshTools.core.fns.googleAnalyticsSendEvent('pageview', {
+                PeshTools.core.fns.googleAnalyticsSendEvent({
                     'page': '/strings/' + request.name + '/delete',
+                    'referrer': request.referrer,
                     'title': request.title
                 });
 
@@ -137,10 +145,7 @@
                  * Отправка статистики о событии.
                  */
             case 'ga.pageview':
-                PeshTools.core.fns.googleAnalyticsSendEvent('pageview', {
-                    'page': request.page,
-                    'title': request.title
-                });
+                PeshTools.core.fns.googleAnalyticsSendEvent(request);
                 break;
 
         }
@@ -379,6 +384,7 @@
             "hidePeshCountdowns": false,
             "showCommissionRate": false,
             "showSelfCountdown": false,
+            "sendStatistics": true,
             "selfDebug": false
         },
 
@@ -496,6 +502,7 @@
                         "hidePeshCountdowns": "Нет секундомерам!",
                         "showCommissionRate": "Проценты комиссий",
                         "showSelfCountdown": "Время до обновления",
+                        "sendStatistics": "Отправлять статистику",
                         "selfDebug": "Отладка в консоли"
                     }
                 }
@@ -527,20 +534,152 @@
     /**
      * Отправляет информацию на сервис Google Analytics.
      * 
+     * @param {Object} data
+     * @param {mixed} force
      * @return {Void}
      */
-    PeshTools.core.fns.googleAnalyticsSendEvent = function ()
+    PeshTools.core.fns.googleAnalyticsSendEvent = function (data, force)
     {
-        var args = Array.prototype.slice.call(arguments);
+        force = !!force;
 
-        args.unshift('send');
+        // учитываем значение опции sendStatistics
+        if (!PeshTools.run.config.sendStatistics && !force)
+        {
+            return;
+        }
 
-        PeshToolsDbg && console.info('ga()', args);
+        // собираем данные
+        var tmp = {
+            'v': '1',
+            'tid': 'UA-89920588-1',
+            'cid': PeshTools.core.fns.getUUID(true),
+            'aip': PeshTools.run.getGADataAIP(),
+            'an': PeshTools.run.manifest.name,
+            'av': PeshTools.run.version,
 
-        ga.apply(window, args);
+            't': 'pageview',
+            'dl': document.location.href,
+            'dp': data.page || document.location.href,
+            'dr': data.referrer || '',
+            'dt': data.title || document.title,
+            'ni': data.nonInteraction ? '1' : '0',
+
+            'sd': screen.pixelDepth + '-bits',
+            'sr': screen.width + 'x' + screen.height,
+            'vp': [
+                Math.max(document.documentElement.clientWidth, window.innerWidth || 0),
+                Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+            ].join('x'),
+
+            'z': Math.random().toString().slice(2)
+        };
+
+        // очищаем пустоты
+        if ('' === tmp.dr)
+        {
+            delete tmp.dr;
+        }
+
+        if ('0x0' === tmp.vp)
+        {
+            delete tmp.vp;
+        }
+
+        PeshToolsDbg && console.log(tmp);
+
+        // оформляем посылку
+        var post = [];
+        for (var p in tmp)
+        {
+            if (tmp.hasOwnProperty(p))
+            {
+                post.push(encodeURIComponent(p) + "=" + encodeURIComponent(tmp[p]));
+            }
+        }
+
+        var message = post.join("&");
+
+        PeshToolsDbg && console.info(message);
+
+        // отправляем
+        try
+        {
+            var request = new XMLHttpRequest();
+
+            request.open("POST", "https://www.google-analytics.com/collect", true);
+            request.send(message);
+        } catch (e)
+        {
+            console.error(e);
+        }
     };
 
-    // PeshTools.core.fns.googleAnalyticsSendEvent = function ()
+    // PeshTools.core.fns.googleAnalyticsSendEvent = function (data)
+
+
+    /**
+     * Возвращает UUID пользователя расширения.
+     * 
+     * @param {mixed} renew
+     * @param {mixed} regen
+     * @return {String}
+     * @since   0.2.0   2017-01-10
+     */
+    PeshTools.core.fns.getUUID = function (renew, regen)
+    {
+        var uuid = void 0;
+        renew = !!renew;
+        regen = !!regen;
+
+        // если нет заявки на регенерацию - пробуем прочитать печеньки
+        if (!regen)
+        {
+            var matches = document.cookie.match(new RegExp(
+                    "(?:^|; )uuid=([^;]*)"
+                    ));
+            uuid = matches ? decodeURIComponent(matches[1]) : void 0;
+        }
+
+        // проверка необходимости регенерации
+        if ('undefined' === typeof uuid)
+        {
+            uuid = PeshTools.core.fns.generateUUID();
+            renew = true;
+        }
+
+        // проверка необходимости обновления печеньки
+        if (renew)
+        {
+            var date = new Date();
+            date.setFullYear(date.getFullYear() + 2);
+
+            document.cookie = 'uuid=' + uuid + '; path=/; expires=' + date.toUTCString();
+        }
+
+        // возврат значения
+        return uuid;
+    };
+
+    // PeshTools.core.fns.getUUID = function (renew)
+
+
+    /**
+     * Генерирует UUID.
+     * 
+     * @author broofa <http://stackoverflow.com/users/109538>
+     * @link http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+     * @return {String}
+     * @since   0.2.0   2017-01-10
+     */
+    PeshTools.core.fns.generateUUID = function ()
+    {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
+    // PeshTools.core.fns.generateUUID = function ()
 
 
     /**
@@ -566,34 +705,29 @@
 
         PeshTools.run.debugStripped = (0 === dbgCnt);
 
+        var ga_data_aip = 0;
+
+        // Cоблюдение политики анонимности Mozilla для пользователей Firefox.
+        if (/firefox|seamonkey/i.test(navigator.userAgent))
+        {
+            PeshTools.core.skel.selfConfig.sendStatistics = false;
+            ga_data_aip = 1;
+        }
+
+        PeshTools.run.getGADataAIP = (function () {
+            return function () {
+                return ga_data_aip;
+            };
+        })();
+
         // Чтение конфигурации.
         PeshTools.core.fns.configLoad();
 
         // Определение режима отладки.
         PeshToolsDbg = PeshTools.run.config.selfDebug;
 
-        // Инициализация статистики Google Analytics.
-        var gaDbg = PeshTools.run.debugStripped ? '' : '_debug';
-
-        (function (i, s, o, g, r, a, m) {
-            i['GoogleAnalyticsObject'] = r;
-            i[r] = i[r] || function () {
-                (i[r].q = i[r].q || []).push(arguments);
-            }, i[r].l = 1 * new Date();
-            a = s.createElement(o),
-                    m = s.getElementsByTagName(o)[0];
-            a.async = 1;
-            a.src = g;
-            m.parentNode.insertBefore(a, m)
-        })(window, document, 'script', 'https://www.google-analytics.com/analytics' + gaDbg + '.js', 'ga');
-
-        ga('create', 'UA-89920588-1', 'auto');
-        ga('set', 'checkProtocolTask', null);
-        ga('set', 'appName', PeshTools.run.manifest.name);
-        ga('set', 'appVersion', PeshTools.run.version);
-
         // Отправка события загрузки фонового сценария.
-        PeshTools.core.fns.googleAnalyticsSendEvent('pageview', {
+        PeshTools.core.fns.googleAnalyticsSendEvent({
             'page': '/'
         });
 

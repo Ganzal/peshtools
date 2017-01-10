@@ -601,7 +601,7 @@
                 PeshTools.run.$body.className += ' peshToolsHideCountdowns';
             }
         }
-        
+
         PeshTools.embedded.fns.updateSendStatisticsNote();
     };
 
@@ -1364,6 +1364,7 @@
         PeshToolsENV.runtime.sendMessage({
             method: 'ga.pageview',
             page: '/embedded#panel-' + PeshTools.run.$panel.className,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -1381,6 +1382,7 @@
         PeshToolsENV.runtime.sendMessage({
             method: 'ga.pageview',
             page: '/embedded',
+            referrer: document.referrer,
             title: document.title
         });
 
@@ -1389,6 +1391,7 @@
                 method: 'ga.pageview',
                 nonInteraction: 1,
                 page: '/embedded#alive+panel-' + PeshTools.run.$panel.className,
+                referrer: document.location.href,
                 title: document.title
             });
         }, 60000);
@@ -1469,6 +1472,7 @@
         PeshToolsENV.runtime.sendMessage({
             method: 'ga.pageview',
             page: '/options',
+            referrer: document.referrer,
             title: 'PeshTools-Options'
         });
 
@@ -1686,6 +1690,7 @@
             name: filter,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -1803,6 +1808,7 @@
             name: filter,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -1976,6 +1982,7 @@
             name: filter,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -2094,6 +2101,7 @@
             name: filter,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -2284,6 +2292,7 @@
                 name: 'execStrings',
                 value: value,
                 scheduleUpdate: true,
+                referrer: document.location.href,
                 title: document.title
             });
 
@@ -2303,6 +2312,7 @@
             name: string,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -2344,6 +2354,7 @@
             name: string,
             value: 'Bypass',
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -2377,6 +2388,7 @@
             method: 'strings.delete',
             name: string,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -2495,6 +2507,7 @@
             name: filter,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
@@ -2616,6 +2629,7 @@
             name: option,
             value: value,
             scheduleUpdate: true,
+            referrer: document.location.href,
             title: document.title
         });
     };
