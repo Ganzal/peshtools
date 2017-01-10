@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.1.0   2017-01-09
- * @date    2017-01-09
+ * @version 0.2.0   2017-01-10
+ * @date    2017-01-10
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -270,6 +270,42 @@
 .peshToolsOptionDisabled input[type='checkbox'] + label {
   color: #b0b0b0 !important;
   border-color: #b0b0b0 !important;
+}
+#peshToolsOptionSendStatistics_dl {
+  outline: 1px solid transparent;
+}
+#peshToolsOptionSendStatistics_dl.disabled {
+  outline-color: orange;
+  background-color: #fff3e6;
+  padding: 2px;
+  margin: -2px;
+}
+#peshToolsOptionSendStatistics_dl.disabled #sendStatisticsNote {
+  color: orange;
+  font-weight: bold;
+  width: 160px;
+}
+#peshToolsOptionSendStatistics_dl.disabled #sendStatisticsNote:after {
+  display: block;
+  text-align: center;
+  content: '😯';
+  font-weight: normal;
+  font-size: 200%;
+}
+#peshToolsOptionSendStatistics_dl.enabled #sendStatisticsNote {
+  color: #1bb06c;
+  font-size: 110%;
+}
+#peshToolsOptionSendStatistics_dl.enabled #sendStatisticsNote:after {
+  font-size: 170%;
+  content: '☺';
+}
+#sendStatisticsLink {
+  color: #b0b0b0;
+}
+#sendStatisticsLink a {
+  color: #b0b0b0;
+  text-decoration: underline;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */

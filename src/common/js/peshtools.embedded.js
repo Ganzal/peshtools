@@ -15,7 +15,7 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.1.0   2017-01-10
+ * @version 0.2.0   2017-01-10
  * @date    2017-01-10
  * 
  * @returns {Void}
@@ -601,6 +601,8 @@
                 PeshTools.run.$body.className += ' peshToolsHideCountdowns';
             }
         }
+        
+        PeshTools.embedded.fns.updateSendStatisticsNote();
     };
 
     // PeshTools.embedded.fns.updateUI = function ()
@@ -1381,7 +1383,7 @@
             page: '/embedded',
             title: document.title
         });
-        
+
         window.setInterval(function () {
             PeshToolsENV.runtime.sendMessage({
                 method: 'ga.pageview',
@@ -2551,6 +2553,32 @@
 
             dl.appendChild(dd);
 
+            if ('sendStatistics' === f)
+            {
+                dl.id = 'peshToolsOptionSendStatistics_dl';
+
+                var dd = document.createElement('dd');
+                dd.id = f + 'Note';
+
+                PeshTools.run.$[dd.id] = dd;
+
+                dl.appendChild(dd);
+
+                PeshTools.embedded.fns.updateSendStatisticsNote();
+
+                var dd = document.createElement('dd');
+                dd.id = f + 'Link';
+
+                dd.innerHTML = [
+                    'Подробнее про <a href="https://peshtools.ganzal.com#spying" ',
+                    'title="PeshTools #Что утекает?" target="_blank">сбор статистики</a>'
+                ].join('');
+
+                PeshTools.run.$[dd.id] = dd;
+
+                dl.appendChild(dd);
+            }
+
             elements.push(dl);
         }
 
@@ -2574,6 +2602,11 @@
 
         PeshTools.run.config[option] = value;
 
+        if ('sendStatistics' === option)
+        {
+            PeshTools.embedded.fns.updateSendStatisticsNote();
+        }
+
         PeshToolsDbg && console.warn(PeshTools.run.config);
 
         PeshToolsENV.runtime.sendMessage({
@@ -2587,6 +2620,27 @@
     };
 
     // PeshTools.embedded.fns.onOptionChange = function ()
+
+
+    /**
+     * Обновляет текст и стиль заметки об опции отправки статистики.
+     * 
+     * @since   0.2.0   2017-01-10
+     * @return {Void}
+     */
+    PeshTools.embedded.fns.updateSendStatisticsNote = function ()
+    {
+        var elem = PeshTools.run.$.sendStatisticsNote;
+        var enabled = PeshTools.run.config.sendStatistics;
+
+        elem.parentNode.className = (enabled ? 'en' : 'dis') + 'abled';
+        elem.innerHTML = (enabled ?
+                'Спасибо за доверие!' :
+                'Буду очень признателен за активацию этой опции'
+                );
+    };
+
+    // PeshTools.embedded.fns.updateSendStatisticsNote = function ()
 
 
     /**
