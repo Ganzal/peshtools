@@ -1,0 +1,52 @@
+{
+    "manifest_version": 2,
+
+    "name": "PeshTools-Dev",
+    "short_name": "PeshTools",
+    "description": "Полезные инструменты для сайта Peshkariki.ru",
+    "version": "0.1.0.0",
+    "version_name": "0.1-dev",
+    "homepage_url": "https://peshtools.ganzal.com",
+    "author": "Sergey D. Ivanov <me@ganzal.pro>",
+
+    "content_scripts": [
+        {
+            "matches": [ 
+                "http://peshkariki.ru/order/*"
+            ],
+            "css": [
+                "/css/peshtools.embedded.css"
+            ]
+        }
+    ],
+
+    "permissions": [
+        "tabs",
+        "contextMenus",
+        "webNavigation",
+        "http://peshkariki.ru/order/*"
+    ],
+
+    "browser_action": {
+        "default_icon": "/img/peshtools.png",
+        "default_popup": "/html/peshtools.popup.html"
+    },
+
+    "background": {
+        "page": "/html/peshtools.background.html",
+        "persistent": true
+    },
+
+    "web_accessible_resources": [
+        "/css/peshtools.embedded.css",
+        "/img/*"
+    ],
+
+    "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+
+    "options_page": "/html/peshtools.options.html",
+
+    "icons": {
+        "48": "img/peshtools.png"
+    }
+}

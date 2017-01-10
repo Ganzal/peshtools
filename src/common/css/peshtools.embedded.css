@@ -1,0 +1,275 @@
+/**
+ * Полезные инструменты для сайта Peshkariki.ru.
+ * 
+ * @author Sergey D. Ivanov <me@ganzal.pro>
+ * @copyright Copyright (c) 2016, Sergey D. Ivanov <me@ganzal.pro>
+ *                      (c) 2016, PeshTools Project https://peshtools.ganzal.com/
+ *                      
+ * @package peshtools
+ * @license MIT
+ */
+/**
+ * Стили встраиваемого сценария и страницы опций.
+ * 
+ * @since   0.1.0   2016-12-16
+ * @version 0.1.0   2017-01-09
+ * @date    2017-01-09
+ */
+/**
+ * Полезные инструменты для сайта Peshkariki.ru.
+ * 
+ * @author Sergey D. Ivanov <me@ganzal.pro>
+ * @copyright Copyright (c) 2016, Sergey D. Ivanov <me@ganzal.pro>
+ *                      (c) 2016, PeshTools Project https://peshtools.ganzal.com/
+ *                      
+ * @package peshtools
+ * @license MIT
+ */
+/**
+ * Реестр LESS-переменных.
+ *
+ * @since   0.1.0   2017-01-09
+ * @version 0.1.0   2017-01-09
+ * @date    2017-01-09
+ */
+#peshTools {
+  cursor: default;
+  font-family: arial;
+  font-size: 12px;
+}
+#peshToolsSticker {
+  display: block;
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  width: 75px;
+  background-color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+#peshToolsSticker:hover {
+  background-color: #ffffff;
+}
+#peshTools.collapsed #peshToolsSticker {
+  outline: 2px solid #18649e;
+}
+#peshTools.expanded #peshToolsSticker {
+  outline: 2px solid #1bb06c;
+}
+#peshToolsStickerLogo {
+  width: 75px;
+}
+#peshToolsStickerStat {
+  line-height: 20px;
+}
+#peshToolsStickerStatVisible {
+  font-size: 18px;
+}
+#peshTools.collapsed #peshToolsStickerStatVisible {
+  color: #18649e;
+}
+#peshTools.expanded #peshToolsStickerStatVisible {
+  color: #1bb06c;
+}
+#peshTools.collapsed #peshToolsStickerCountdown {
+  color: #18649e;
+}
+#peshTools.expanded #peshToolsStickerCountdown {
+  color: #1bb06c;
+}
+#peshToolsStickerStatOverall {
+  font-size: 12px;
+  color: #999;
+}
+#peshToolsStickerStatOverall:before {
+  content: '\00a0/\00a0';
+}
+#peshToolsFilters {
+  position: fixed;
+  left: 95px;
+  bottom: 10px;
+  right: 10px;
+  top: 10px;
+  background-color: rgba(255, 255, 255, 0.98);
+  outline: 2px solid #1bb06c;
+  overflow-y: scroll;
+}
+#peshTools.collapsed #peshToolsFilters {
+  display: none;
+}
+#peshTools.expanded #peshToolsFilters {
+  display: block;
+}
+#peshTools div {
+  display: block;
+}
+#peshTools input[type="text"],
+#peshTools input[type="number"] {
+  display: inline-block;
+  border: none;
+  outline: none;
+  color: #18649e;
+  font-size: 12px;
+  height: 20px;
+  width: 85%;
+  float: left;
+  border: 1px solid #2495eb;
+}
+#peshTools button,
+#peshTools a.button {
+  display: inline-block;
+  border: 1px solid transparent;
+  color: #18649e;
+  background-color: white;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  line-height: 12px;
+  font-size: 10px;
+}
+#peshTools button:hover,
+#peshTools a.button:hover {
+  background-color: #2495eb;
+  color: white;
+}
+#peshTools button[id$="Delete"] {
+  color: #e01d1d;
+}
+#peshTools button[id$="Delete"]:hover {
+  border-color: #e01d1d;
+  background-color: white;
+}
+#peshToolsFooter {
+  font-size: 11px;
+  text-align: center;
+  padding: 4px;
+}
+#peshTools label {
+  border: 1px solid #18649e;
+  padding: 1px;
+  display: inline;
+}
+#peshTools input[type='checkbox'],
+#peshTools input[type='radio'] {
+  display: none;
+}
+#peshTools input[type='checkbox'] + label:before {
+  content: '*';
+}
+#peshTools input:checked + label {
+  background-color: #18649e;
+  color: white;
+}
+#peshTools sub {
+  padding: 2px;
+  margin-left: 2px;
+  color: #1bb06c;
+}
+#peshTools fieldset {
+  width: 200px;
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #ccc;
+}
+#peshTools div.column {
+  float: left;
+}
+#peshTools label {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+  line-height: 12px;
+  font-size: 10px;
+  text-align: center;
+  vertical-align: middle;
+  color: #18649e;
+}
+#peshTools fieldset:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+#peshTools fieldset dl {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: inline-block;
+}
+#peshTools fieldset dl dd {
+  float: left;
+  margin: 0;
+}
+#peshTools fieldset dl:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+#peshTools fieldset dl dt {
+  float: left;
+  width: 110px;
+}
+#peshTools input[value='Exclude'] + label {
+  border-color: #e01d1d;
+  color: #e01d1d;
+}
+#peshTools input[value='Exclude']:checked + label {
+  background-color: #e01d1d;
+  color: white;
+}
+.peshToolsHide {
+  display: none;
+}
+.peshToolsEarning {
+  font-size: 150%;
+}
+.peshToolsComission {
+  font-size: 75%;
+}
+.peshToolsDrops {
+  color: #999;
+}
+#peshTools legend {
+  display: inline-block;
+  width: auto;
+  font-size: 16px;
+  line-height: 20px;
+  margin: 0;
+  padding: 3px;
+  background-color: white;
+  border: 0;
+}
+#peshTools #options_fs {
+  width: 250px;
+}
+#peshTools #options_fs dt {
+  width: 180px;
+}
+.peshToolsHideCommissionRate .peshToolsCommission {
+  display: none;
+}
+#peshToolsStickerCountdown {
+  display: block;
+  font-size: 10px;
+  line-height: 12px;
+  position: fixed;
+  left: 75px;
+  bottom: 94px;
+  text-align: right;
+}
+#peshToolsStickerCountdown.hide {
+  display: none;
+}
+.peshToolsHideCountdowns .peshToolsCountDown {
+  display: none;
+}
+.peshToolsOptionDisabled dt {
+  color: #b0b0b0;
+  text-decoration: line-through;
+}
+.peshToolsOptionDisabled input[type='checkbox'] + label {
+  color: #b0b0b0 !important;
+  border-color: #b0b0b0 !important;
+}
+/* eof: /css/peshtools.embedded.less */
+/*# sourceMappingURL=peshtools.embedded.css.map */
