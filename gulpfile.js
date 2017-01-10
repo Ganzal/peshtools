@@ -413,6 +413,15 @@ gulp.task('dist', [
     'dist:firefox'
 ]);
 
+gulp.task('dist:prepare', function () {
+    var c = [
+        'mkdir -p var/tmp/web-ext',
+        'mkdir -p dist/release'
+    ];
+
+    exec(c.join(' && '), {stdio: 'inherit'});
+});
+
 
 /**
  * dist:chrome
@@ -423,6 +432,7 @@ gulp.task('dist', [
  */
 gulp.task('dist:chrome', function () {
     return runSequence(
+            'dist:prepare',
             'clean:dist:chrome',
             'dist:chrome:copy',
             'dist:chrome:compress'
@@ -477,6 +487,7 @@ gulp.task('dist:chrome:compress', function () {
  */
 gulp.task('dist:firefox', function () {
     return runSequence(
+            'dist:prepare',
             'clean:dist:firefox',
             'dist:firefox:copy',
             'dist:firefox:compress'
