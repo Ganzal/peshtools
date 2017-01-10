@@ -1,0 +1,37 @@
+{
+  "name": "PeshTools",
+  "version": "0.1.0",
+  "version_name": "0.1-dev",
+  "description": "Полезные инструменты для сайта Peshkariki.ru",
+  "main": "gulpfile.js",
+  "devDependencies": {
+    "child_process": "^1.0.2",
+    "del": "^2.2.2",
+    "fs": "0.0.1-security",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^2.3.2",
+    "gulp-htmlmin": "^3.0.0",
+    "gulp-json-transform": "^0.4.2",
+    "gulp-jsonmin": "^1.1.0",
+    "gulp-rimraf": "^0.2.1",
+    "gulp-strip-debug": "^1.1.0",
+    "gulp-uglify": "^2.0.0",
+    "gulp-zip": "^3.2.0",
+    "merge-stream": "^1.0.1",
+    "run-sequence": "^1.2.2",
+    "vinyl-fs": "^2.4.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ganzal/peshtools"
+  },
+  "author": "Sergey D. Ivanov <me@ganzal.pro>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ganzal/peshtools/issues"
+  },
+  "homepage": "https://peshtools.ganzal.com/"
+}
