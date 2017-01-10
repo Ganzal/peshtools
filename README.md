@@ -1,10 +1,9 @@
 PeshTools
 =========
 
-Полезные инструменты для сайта [Peshkariki.ru](http://peshkariki.ru)
-<sup><sup>*1*</sup></sup>.
+Полезные инструменты для сайта [Пешкарики](http://peshkariki.ru)<sup><sup>_1_</sup></sup>.
 
-<sub><sub>***[1]** для пользователей-курьеров*</sub></sub>
+<sub><sub>_**[1]** для пользователей-курьеров_</sub></sub>
 
 Что это?
 --------
@@ -20,12 +19,12 @@ PeshTools
 Скачать
 -------
 ### Google Chrome, Opera 
-*и другие браузеры на движке Chromium*
+_и другие браузеры на движке Chromium_
 
 [Интернет-магазин Chrome](https://chrome.google.com/webstore/detail/peshtools/bfcjjgijeabbjgfbmnmfbbbppjohnomk)
 
 ### Mozilla Firefox
-*и родственники огненной лисы*
+_и родственники огненной лисы_
 
 [Дополнения Firefox](https://addons.mozilla.org/ru/firefox/addon/peshtools/)
 
@@ -34,4 +33,4 @@ PeshTools
 
 Распространяется под лицензией MIT. См файл [LICENSE](LICENSE). 
 
-*<sub><sub>eof</sub></sub>*
+_<sub><sub>eof</sub></sub>_
