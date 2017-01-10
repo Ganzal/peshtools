@@ -1387,6 +1387,7 @@
         window.setInterval(function () {
             PeshToolsENV.runtime.sendMessage({
                 method: 'ga.pageview',
+                nonInteraction: 1,
                 page: '/embedded#alive+panel-' + PeshTools.run.$panel.className,
                 title: document.title
             });
