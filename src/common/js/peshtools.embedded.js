@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.2.0   2017-01-10
- * @date    2017-01-10
+ * @version 0.3.0   2017-01-11
+ * @date    2017-01-11
  * 
  * @returns {Void}
  */
@@ -2254,7 +2254,7 @@
         }
 
         var button = document.createElement('button');
-        button.id = string + 'Delete';
+        button.id = 'string' + string + 'Delete';
         button.name = button.id;
         button.innerText = 'Ⓧ';
         button.addEventListener('click', PeshTools.embedded.fns.onStringDelClick);
