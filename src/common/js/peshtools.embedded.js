@@ -446,6 +446,11 @@
             PeshTools.run.$[c + '_cnt'].innerHTML = PeshTools.run.stats[c];
         }
 
+        PeshToolsENV.runtime.sendMessage({
+            method: 'stats.push',
+            data: PeshTools.run.stats
+        });
+
         // Сброс счетчика следующего обновления.
         setTimeout(function ()
         {

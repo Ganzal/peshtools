@@ -176,6 +176,33 @@
                 PeshTools.core.fns.googleAnalyticsSendEvent(request);
                 break;
                 
+                /**
+                 * Демонстрация бэджа с количеством заказов.
+                 * 
+                 * Зеленый фон - количество не скрытых фильтрами заказов.
+                 * Синий фон - общее количество заказов, при нулевом количестве видимых.
+                 */
+            case 'stats.push':
+                var data = {
+                    color: '#ffffff',
+                    text: ''
+                };
+                
+                if (request.data.ordersVisible)
+                {
+                    data.color = '#1bb06c';
+                    data.text = request.data.ordersVisible;
+                }
+                else
+                {
+                    data.color = '#18649e';
+                    data.text = request.data.ordersOverall;
+                }
+                
+                PeshTools.core.fns.badge(data);
+                
+                break;
+                
         }
 
         // switch (request.method)
