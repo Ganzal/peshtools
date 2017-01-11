@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.2.0   2017-01-10
- * @date    2017-01-10
+ * @version 0.3.0   2017-01-11
+ * @date    2017-01-11
  * 
  * @returns {Void}
  */
@@ -28,6 +28,34 @@
 
     PeshTools.core = {};
     PeshTools.core.fns = {};
+    
+    /**
+     * Изменяет иконку приложения, текст и цвет бэджика.
+     * 
+     * @param {undefined|Object} data
+     * @return {Void}
+     * @since   0.3.0   2017-01-11
+     */
+    PeshTools.core.fns.badge = function (data)
+    {
+        if('undefined' !== typeof data.color)
+        {
+            PeshToolsENV.browserAction.setBadgeBackgroundColor({color: data.color});
+        }
+        
+        if('undefined' !== typeof data.text)
+        {
+            PeshToolsENV.browserAction.setBadgeText({text: '' + data.text + ''});
+        }
+        
+        if('undefined' !== typeof data.icon)
+        {
+            PeshToolsENV.browserAction.setIcon({path: data.icon});
+        }
+    };
+    
+    // PeshTools.core.fns.badge = function (data)
+
 
     /**
      * Обработчик сообщений в адрес фонового сценария.
@@ -147,7 +175,7 @@
             case 'ga.pageview':
                 PeshTools.core.fns.googleAnalyticsSendEvent(request);
                 break;
-
+                
         }
 
         // switch (request.method)
