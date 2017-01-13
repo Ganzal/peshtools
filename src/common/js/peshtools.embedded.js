@@ -15,7 +15,7 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.3.0   2017-01-11
+ * @version 0.3.0   2017-01-13
  * @date    2017-01-13
  * 
  * @returns {Void}
@@ -35,19 +35,22 @@
      * Выполняет запрос фильтров и конфигурации у фонового сценария.
      * 
      * @param {Boolean} scheduleUpdate
+     * @param {Boolean} interaction Признак пользовательского взаимодействия,
+     *  которое запустило процедуру обновления информации о списке заказов.
      * @return {Void}
      */
-    PeshTools.embedded.fns.fetchRunDataRequest = function (forceUpdate)
+    PeshTools.embedded.fns.fetchRunDataRequest = function (forceUpdate, interaction)
     {
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'run.fetch',
             forceUpdate: forceUpdate,
+            interaction: interaction,
             title: document.title
         }, PeshTools.embedded.fns.fetchRunDataResponseCallback);
 
     };
 
-    // PeshTools.embedded.fns.fetchRunDataRequest = function (forceUpdate)
+    // PeshTools.embedded.fns.fetchRunDataRequest = function (forceUpdate, interaction)
 
 
     /**
@@ -91,7 +94,7 @@
 
         if (response.forceUpdate || response.config.selfAutoupdate)
         {
-            return PeshTools.embedded.fns.update();
+            return PeshTools.embedded.fns.update(response.interaction);
         }
 
         window.setTimeout(function ()
@@ -129,8 +132,10 @@
      * 
      * @return {Void}
      */
-    PeshTools.embedded.fns.update = function ()
+    PeshTools.embedded.fns.update = function (interaction)
     {
+        interaction = !!interaction;
+
         PeshToolsDbg && console.info('@ PeshTools.embedded.fns.update()');
 
         // Формирования дат Вчера, Сегодня, Завтра.
@@ -448,6 +453,7 @@
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'stats.push',
+            interaction: interaction,
             data: PeshTools.run.stats
         });
 
@@ -458,7 +464,7 @@
         }, 0);
     };
 
-    // PeshTools.embedded.fns.update = function ()
+    // PeshTools.embedded.fns.update = function (interaction)
 
 
     /**
@@ -634,7 +640,12 @@
              * Обновление информации о списке заказов.
              */
             case 'update.run':
-                PeshTools.embedded.fns.fetchRunDataRequest(true);
+                if ('undefined' === typeof request.interaction)
+                {
+                    request.interaction = false;
+                }
+
+                PeshTools.embedded.fns.fetchRunDataRequest(true, request.interaction);
                 break;
 
                 /**
@@ -2568,6 +2579,71 @@
 
             var dd = document.createElement('dd');
             var input = document.createElement('input');
+
+            if ('badgeBlinking' === f)
+            {
+                dl.id = 'peshToolsOptionBadgeBlinking_dl';
+
+                input.type = 'radio';
+                input.name = f;
+                input.id = f + 'None';
+                input.value = 'None';
+                input.checked = input.value === PeshTools.run.config.badgeBlinking;
+                input.addEventListener('change', PeshTools.embedded.fns.onBadgeBlinkingOptionChange);
+
+                PeshTools.run.$[input.id] = input;
+
+                var label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.innerHTML = 'Нет';
+
+                dd.appendChild(input);
+                dd.appendChild(label);
+
+                var input = document.createElement('input');
+                input.type = 'radio';
+                input.name = f;
+                input.id = f + 'Pulse';
+                input.value = 'Pulse';
+                input.checked = input.value === PeshTools.run.config.badgeBlinking;
+                input.addEventListener('change', PeshTools.embedded.fns.onBadgeBlinkingOptionChange);
+
+                PeshTools.run.$[input.id] = input;
+
+                var label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.innerHTML = 'Пульс';
+
+                dd.appendChild(input);
+                dd.appendChild(label);
+
+                var input = document.createElement('input');
+                input.type = 'radio';
+                input.name = f;
+                input.id = f + 'Zebra';
+                input.value = 'Zebra';
+                input.checked = input.value === PeshTools.run.config.badgeBlinking;
+                input.addEventListener('change', PeshTools.embedded.fns.onBadgeBlinkingOptionChange);
+
+                PeshTools.run.$[input.id] = input;
+
+                var label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.innerHTML = 'Зебра';
+
+                dd.appendChild(input);
+                dd.appendChild(label);
+
+                dl.appendChild(dd);
+
+                elements.push(dl);
+
+                continue;
+            }
+
+            // if ('badgeBlinking' === f)
+
+
             input.type = 'checkbox';
             input.name = f;
             input.id = f;
@@ -2663,6 +2739,37 @@
     };
 
     // PeshTools.embedded.fns.onOptionChange = function ()
+
+
+    /**
+     * Обработчик изменения значения опции badgeBlinking приложения.
+     *
+     * @return {Void}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.embedded.fns.onBadgeBlinkingOptionChange = function ()
+    {
+        console.log(this);
+
+        var option = this.name;
+        var value = this.value;
+
+        PeshTools.run.config[option] = value;
+
+        PeshToolsDbg && console.warn(PeshTools.run.config);
+
+        PeshTools.embedded.fns.sendMessageWrapper({
+            method: 'config.save',
+            bank: 'config',
+            name: option,
+            value: value,
+            scheduleUpdate: true,
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.embedded.fns.onBadgeBlinkingOptionChange = function ()
 
 
     /**

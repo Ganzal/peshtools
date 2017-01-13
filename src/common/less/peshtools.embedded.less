@@ -13,8 +13,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.2.0   2017-01-10
- * @date    2017-01-10
+ * @version 0.3.0   2017-01-13
+ * @date    2017-01-13
  */
 
 @import "_variables.less";
@@ -375,6 +375,25 @@
 #sendStatisticsLink a {
     color: @peshtools-color-grey;
     text-decoration: underline;
+}
+
+
+#peshToolsOptionBadgeBlinking_dl dd {
+    width: 100%;
+}
+
+#peshToolsOptionBadgeBlinking_dl label {
+    width: 30%;
+}
+
+#peshToolsOptionBadgeBlinking_dl #badgeBlinkingNone + label {
+    color: @peshtools-color-grey;
+    border-color: @peshtools-color-grey;
+}
+
+#peshToolsOptionBadgeBlinking_dl #badgeBlinkingNone:checked + label {
+    color: white;
+    background-color: @peshtools-color-grey;
 }
 
 /* eof: /css/peshtools.embedded.less */

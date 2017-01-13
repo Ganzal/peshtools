@@ -15,7 +15,7 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.3.0   2017-01-11
+ * @version 0.3.0   2017-01-13
  * @date    2017-01-13
  * 
  * @returns {Void}
@@ -58,6 +58,280 @@
 
 
     /**
+     * Безопасно изменяет иконку приложения, текст и цвет бэджика, учитывая демо-режим мигалки.
+     * 
+     * @param {Object} data
+     * @return {Void}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.badgeSafe = function (data)
+    {
+        if (PeshTools.run.badgeBlinkDemo)
+        {
+            PeshTools.run.badgePending = data;
+            return;
+        }
+
+        PeshTools.core.fns.badge(data);
+    };
+
+    // PeshTools.core.fns.badgeSafe = function (data)
+
+
+    /**
+     * Создает последовательность цветов для демонстрации мигания бэджика в заданном стиле.
+     * 
+     * @param {String} s
+     * @return {Array}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.badgeBlinkStyleDemo = function (s)
+    {
+        var schemeGenerator = PeshTools.core.fns['badgeBlinkStyle' + s];
+        if ('undefined' === typeof schemeGenerator)
+        {
+            schemeGenerator = PeshTools.core.fns.badgeBlinkStylePulse;
+        }
+
+        var g = schemeGenerator('#1bb06c', '#68fdd9');
+        var b = schemeGenerator('#18649e', '#65b1eb');
+
+        b.push('#65b1eb', [255, 255, 255, 0], [255, 255, 255, 128], [255, 255, 255, 0]);
+
+        return b.concat(g);
+    };
+
+    // PeshTools.core.fns.badgeBlinkStyleDemo = function (s)
+
+
+    /**
+     * Задает последовательность цветов для мигания бэджика в стиле Пульсации.
+     * 
+     * @param {String} m
+     * @param {String} l
+     * @return {Array}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.badgeBlinkStylePulse = function (m, l)
+    {
+        return [
+            m, m, m, l,
+            m, m, m, l,
+            m
+        ].reverse();
+    };
+
+    // PeshTools.core.fns.badgeBlinkStylePulse = function (m, l)
+
+
+    /**
+     * Задает последовательность цветов для мигания бэджика в стиле Зебры.
+     * 
+     * @param {String} m
+     * @param {String} l
+     * @return {Array}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.badgeBlinkStyleZebra = function (m, l)
+    {
+        return [
+            m, l,
+            m, l,
+            m, l,
+            m
+        ].reverse();
+    };
+
+    // PeshTools.core.fns.badgeBlinkStyleZebra = function (m, l)
+
+
+    /**
+     * Конструктор мигалки.
+     * 
+     * @param {mixed} v Значение бэджа.
+     * @param {String} m Основной ("темный") цвет.
+     * @param {String} l Дополнительный ("светлый") цвет.
+     * @param {String} s Стиль мигания.
+     * @param {undefined|Function} c Опциональная функция окончания цикла мигания.
+     * @return {Void}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.badgeBlinkPrepare = function (v, m, l, s, c)
+    {
+        // Не моргаем, если активна демка.
+        if (PeshTools.run.badgeBlinkDemo)
+        {
+            return;
+        }
+
+        // Выбор генератора стиля моргания.
+        var schemeGenerator = PeshTools.core.fns['badgeBlinkStyle' + s];
+        if ('undefined' === typeof schemeGenerator)
+        {
+            schemeGenerator = PeshTools.core.fns.badgeBlinkStylePulse;
+        }
+
+        // Режим демонстрации.
+        if ('@badgeBlinkDemo' === v)
+        {
+            // Включение демо-режима.
+            PeshTools.run.badgeBlinkDemo = true;
+
+            // Схема мигания.
+            PeshTools.run.badgeBlinkScheme = PeshTools.core.fns.badgeBlinkStyleDemo(s);
+            PeshTools.run.badgeBlinkCounter = PeshTools.run.badgeBlinkScheme.length;
+
+            // Текст бэджа - название режима без гласных букв.
+            v = s.replace(/[aeiouy]/ig, '').toUpperCase();
+
+            var currentColor, currentValue;
+            // Получение текущего цвета бэджика.
+            PeshToolsENV.browserAction.getBadgeBackgroundColor({}, function (arg)
+            {
+                // Лиса говорит #rrggbb.
+                if (/^#[0-9a-f]{6}$/i.test(arg))
+                {
+                    currentColor = arg;
+                } else
+                {
+                    // Хром говорит [rrr, ggg, bbb, aaa].
+                    var r = ('000000000000000' + arg[0].toString(16)).substr(-2);
+                    var g = ('000000000000000' + arg[1].toString(16)).substr(-2);
+                    var b = ('000000000000000' + arg[2].toString(16)).substr(-2);
+                    currentColor = '#' + r + g + b;
+                }
+
+                // Получение текущего текста бэджика
+                PeshToolsENV.browserAction.getBadgeText({}, function () {
+                    currentValue = arguments[0];
+
+                    // Функция завершения цикла мигания.
+                    c = function ()
+                    {
+                        // Выключение демо-режима.
+                        PeshTools.run.badgeBlinkDemo = false;
+
+                        // Вспоминаем данные до демонстрации.
+                        var data = {
+                            color: currentColor,
+                            text: currentValue
+                        };
+
+                        // Проверяем ожидающие данные.
+                        if (PeshTools.run.badgePending)
+                        {
+                            data = PeshTools.run.badgePending;
+                            PeshTools.run.badgePending = null;
+                        }
+
+                        // Прямая установка нового старого состояния бэджа.
+                        PeshTools.core.fns.badge(data);
+                    };
+
+                    // Первый "блинк".
+                    PeshTools.core.fns.badge({
+                        text: v, // заполняем бэджик значением
+                        color: '#68fdd9' // мигание начинается со второго ("светлого") цвета в схеме
+                    });
+
+                    // Конструируем мигалку.
+                    PeshTools.core.fns.badgeBlinkExec(c);
+                });
+            });
+
+            return;
+        } else
+        {
+            // Схема мигания.
+            PeshTools.run.badgeBlinkScheme = schemeGenerator(m, l);
+            PeshTools.run.badgeBlinkCounter = PeshTools.run.badgeBlinkScheme.length;
+        }
+
+        // Первый "блинк".
+        PeshTools.core.fns.badge({
+            text: v, // заполняем бэджик значением
+            color: l // мигание начинается со второго ("светлого") цвета в схеме
+        });
+
+        // Конструируем мигалку.
+        PeshTools.core.fns.badgeBlinkExec(c);
+    };
+
+    // PeshTools.core.fns.badgeBlinkPrepare = function (v, m, l, s, c)
+
+
+    /**
+     * Мигание бэджика.
+     * 
+     * В цикле прохоид все цвета, которые нужно применить к бэджику, после
+     * чего выполняет опциональную функцию завершения мигания.
+     * 
+     * @param {undefined|Function} c
+     * @return {Void}
+     * 
+     */
+    PeshTools.core.fns.badgeBlinkExec = function (c)
+    {
+        // Функция мигания задается единожды.
+        if (!PeshTools.run.badgeBlinkIntervalId)
+        {
+            // Создание функции мигания.
+            PeshTools.run.badgeBlinkIntervalId = window.setInterval(function () {
+                // Пока счетчик не достиг нуля...
+                if (0 < PeshTools.run.badgeBlinkCounter)
+                {
+                    // Декремент счетчика.
+                    PeshTools.run.badgeBlinkCounter--;
+
+                    // Получение цвета для текущего значения счетчики.
+                    var color = PeshTools.run.badgeBlinkScheme[PeshTools.run.badgeBlinkCounter];
+
+                    // Установка цветка бэджа.
+                    PeshTools.core.fns.badge({
+                        color: color
+                    });
+
+                    return;
+                }
+
+                // Когда счетчик достиг нуля:
+                // Удаляем интервал функции мигания.
+                window.clearInterval(PeshTools.run.badgeBlinkIntervalId);
+                PeshTools.run.badgeBlinkIntervalId = null;
+
+                // Вызываем необязательнуй функцию.
+                if ('undefined' !== typeof c)
+                {
+                    c.call();
+                }
+            }, PeshTools.run.badgeBlinkDelay);
+        }
+    };
+
+    // PeshTools.core.fns.badgeBlinkExec = function (c)
+
+
+    /**
+     * Демонстрирует мигание бэджика в выбранном стиле.
+     * 
+     * @param {String} s
+     * @return {Void}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.badgeBlinkDemo = function (s)
+    {
+        if ('undefined' === typeof PeshTools.core.fns['badgeBlinkStyle' + s])
+        {
+            return;
+        }
+
+        PeshTools.core.fns.badgeBlinkPrepare('@badgeBlinkDemo', '', '', s);
+    };
+
+    // PeshTools.core.fns.badgeBlinkDemo = function (s)
+
+
+    /**
      * Обработчик сообщений в адрес фонового сценария.
      * 
      * @param {mixed} request
@@ -89,6 +363,11 @@
                     forceSendStatistics = PeshTools.run.config.sendStatistics;
                 }
 
+                if ('config' === request.bank && 'badgeBlinking' === request.name)
+                {
+                    PeshTools.core.fns.badgeBlinkDemo(request.value);
+                }
+
                 PeshTools.run[request.bank][request.name] = request.value;
                 PeshTools.core.fns.configSave();
 
@@ -99,7 +378,7 @@
 
                 if (request.scheduleUpdate)
                 {
-                    PeshTools.core.fns.postUpdateHook();
+                    PeshTools.core.fns.postUpdateHook(true);
                 }
 
                 var ga_pageview_page = '/' + request.bank + '/' + request.name;
@@ -144,6 +423,7 @@
                     config: PeshTools.run.config,
                     filters: PeshTools.run.filters,
                     strings: PeshTools.run.strings,
+                    interaction: !!request.interaction,
                     forceUpdate: request.forceUpdate
                 };
 
@@ -164,7 +444,7 @@
 
                 if (request.scheduleUpdate)
                 {
-                    PeshTools.core.fns.postUpdateHook();
+                    PeshTools.core.fns.postUpdateHook(true);
                 }
 
                 PeshTools.core.fns.googleAnalyticsSendEvent({
@@ -189,23 +469,7 @@
                  * Синий фон - общее количество заказов, при нулевом количестве видимых.
                  */
             case 'stats.push':
-                var data = {
-                    color: '#ffffff',
-                    text: ''
-                };
-
-                if (request.data.ordersVisible)
-                {
-                    data.color = '#1bb06c';
-                    data.text = request.data.ordersVisible;
-                } else
-                {
-                    data.color = '#18649e';
-                    data.text = request.data.ordersOverall;
-                }
-
-                PeshTools.core.fns.badge(data);
-
+                PeshTools.core.fns.statsToBadge(request);
                 break;
 
                 /**
@@ -228,9 +492,10 @@
      * Запускает обновление информации встраиваемым сценарием
      * на всех вкладках, где открыт список заказов.
      * 
+     * @param {Boolean} interaction
      * @return {Void}
      */
-    PeshTools.core.fns.postUpdateHook = function ()
+    PeshTools.core.fns.postUpdateHook = function (interaction)
     {
         PeshToolsENV.tabs.query({
             url: 'http://peshkariki.ru/order/courOrders.html*'
@@ -239,13 +504,134 @@
             for (var i in tabs)
             {
                 PeshToolsENV.tabs.sendMessage(tabs[i].id, {
+                    interaction: interaction,
                     method: 'update.run'
                 });
             }
         });
     };
 
-    // PeshTools.core.fns.postUpdateHook = function ()
+    // PeshTools.core.fns.postUpdateHook = function (interaction)
+
+
+    /**
+     * Обрабатывает статистику и заполняет бэджик.
+     * 
+     * Зеленый фон - количество не скрытых фильтрами заказов.
+     * Синий фон - общее количество заказов, при нулевом количестве видимых.
+     * 
+     * А еще есть режим моргания бэджа при увеличении значения счетчика.
+     * 
+     * @param {Object} request
+     * @return {Void}
+     * @since   0.3.0   2017-01-13
+     */
+    PeshTools.core.fns.statsToBadge = function (request)
+    {
+        // Сброс бэджа.
+        var data = {
+            color: '#ffffff',
+            text: ''
+        };
+
+        // Если есть видимые заказы...
+        if (request.data.ordersVisible)
+        {
+            // Показываем зеленый бэдж.
+            data.color = '#1bb06c';
+            data.text = request.data.ordersVisible;
+        } else
+        {
+            // Иначе - синий бэдж с общим числом заказов.
+            data.color = '#18649e';
+            data.text = request.data.ordersOverall;
+        }
+
+        // Не мигаем если отключено, или было взаимодейтсвие.
+        if (request.interaction || 'None' === PeshTools.run.config.badgeBlinking)
+        {
+            PeshTools.core.fns.badgeSafe(data);
+            return;
+        }
+
+        // Ниже - простая процедура подготовки мигания.
+
+        var newValue = Number.parseInt(data.text);
+        var currentColor, currentValue;
+
+        // Получение текущего цвета бэджа.
+        PeshToolsENV.browserAction.getBadgeBackgroundColor({}, function (arg)
+        {
+            if (/^#[0-9a-f]{6}$/i.test(arg))
+            {
+                // Лиса говорит #rrggbb.
+                currentColor = arg;
+            } else
+            {
+                // Хром говорит [rrr, ggg, bbb, aaa].
+                var r = ('000000000000000' + arg[0].toString(16)).substr(-2);
+                var g = ('000000000000000' + arg[1].toString(16)).substr(-2);
+                var b = ('000000000000000' + arg[2].toString(16)).substr(-2);
+                currentColor = '#' + r + g + b;
+            }
+
+            // Получение текущего текста бэджа.
+            PeshToolsENV.browserAction.getBadgeText({}, function () {
+                currentValue = Number.parseInt(arguments[0]);
+
+                var needBlink = true;
+
+                // Не мигаем при переходе от зеленого к синему.
+                if ('#1bb06c' === currentColor && '#18649e' === data.color)
+                {
+                    needBlink = false;
+                }
+
+                // Мигаем если идет смена синего на зеленый или если в зеленом повышается значение.
+                needBlink &= currentColor !== data.color || currentValue < newValue;
+
+                // Без мигания - выполняем простую функцию установки бэджа.
+                if (!needBlink)
+                {
+                    PeshTools.core.fns.badgeSafe(data);
+                    return;
+                }
+
+                // При активном демо-мигании - встанем в очередь
+                if (PeshTools.run.badgeBlinkDemo)
+                {
+                    PeshTools.run.badgePending = data;
+                    return;
+                }
+
+                // Темный цвет в паре.
+                var mainColor = data.color;
+
+                // Светлый цвет в паре.
+                switch (data.color)
+                {
+                    case '#1bb06c':
+                        data.color = '#68fdd9';
+
+                        break;
+
+                    case '#18649e':
+
+                        data.color = '#65b1eb';
+
+                        break;
+                }
+
+                // Конструируем мигалку.
+                PeshTools.core.fns.badgeBlinkPrepare(
+                        newValue, mainColor, data.color,
+                        PeshTools.run.config.badgeBlinking
+                        );
+            });
+        });
+    };
+
+    // PeshTools.core.fns.statsToBadge = function (request)
 
 
     /**
@@ -305,6 +691,7 @@
                 PeshToolsDbg && console.info('executing "update.run"');
 
                 PeshToolsENV.tabs.sendMessage(tab.id, {
+                    interaction: false,
                     method: 'update.run'
                 });
             }
@@ -429,6 +816,7 @@
     PeshTools.core.skel = {
         "selfConfig": {
             "selfAutoupdate": true,
+            "badgeBlinking": "None",
             "hidePeshCountdowns": false,
             "showCommissionRate": false,
             "showSelfCountdown": false,
@@ -547,6 +935,7 @@
                     "type": "Options",
                     "data": {
                         "selfAutoupdate": "Автообновление",
+                        "badgeBlinking": "Мигание бэджа",
                         "hidePeshCountdowns": "Нет секундомерам!",
                         "showCommissionRate": "Проценты комиссий",
                         "showSelfCountdown": "Время до обновления",
@@ -833,7 +1222,7 @@
         // Если живчиков нет - убираем бэджик.
         if (!anyTab)
         {
-            PeshTools.core.fns.badge({
+            PeshTools.core.fns.badgeSafe({
                 "text": "",
                 "color": "#000000"
             });
@@ -910,6 +1299,8 @@
         PeshTools.run = {};
         PeshTools.run.tabs = {};
         PeshTools.run.sess = PeshTools.core.fns.generateUUID();
+        PeshTools.run.badgeBlinkDelay = 200;
+        PeshTools.run.badgeBlinkDemo = false;
 
         var manifest = PeshToolsENV.runtime.getManifest();
 

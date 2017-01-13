@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.2.0   2017-01-10
- * @date    2017-01-10
+ * @version 0.3.0   2017-01-13
+ * @date    2017-01-13
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -306,6 +306,20 @@
 #sendStatisticsLink a {
   color: #b0b0b0;
   text-decoration: underline;
+}
+#peshToolsOptionBadgeBlinking_dl dd {
+  width: 100%;
+}
+#peshToolsOptionBadgeBlinking_dl label {
+  width: 30%;
+}
+#peshToolsOptionBadgeBlinking_dl #badgeBlinkingNone + label {
+  color: #b0b0b0;
+  border-color: #b0b0b0;
+}
+#peshToolsOptionBadgeBlinking_dl #badgeBlinkingNone:checked + label {
+  color: white;
+  background-color: #b0b0b0;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */
