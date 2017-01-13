@@ -16,7 +16,7 @@
  * 
  * @since   0.1.0   2016-12-16
  * @version 0.3.0   2017-01-11
- * @date    2017-01-11
+ * @date    2017-01-13
  * 
  * @returns {Void}
  */
@@ -39,7 +39,7 @@
      */
     PeshTools.embedded.fns.fetchRunDataRequest = function (forceUpdate)
     {
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'run.fetch',
             forceUpdate: forceUpdate,
             title: document.title
@@ -94,7 +94,7 @@
             return PeshTools.embedded.fns.update();
         }
 
-        setTimeout(function ()
+        window.setTimeout(function ()
         {
             PeshTools.embedded.fns.resetCountdown();
         }, 0);
@@ -446,13 +446,13 @@
             PeshTools.run.$[c + '_cnt'].innerHTML = PeshTools.run.stats[c];
         }
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'stats.push',
             data: PeshTools.run.stats
         });
 
         // Сброс счетчика следующего обновления.
-        setTimeout(function ()
+        window.setTimeout(function ()
         {
             PeshTools.embedded.fns.resetCountdown();
         }, 0);
@@ -541,8 +541,11 @@
                 return;
             }
 
+            var force = 'undefined' === typeof table.dataset.peshToolsSess ||
+                    table.dataset.peshToolsSess !== PeshTools.run.sess;
+
             // Пропускаем таблицы с объявленным идентификатором заказа.
-            if ('undefined' !== typeof table.dataset.peshToolsOrderId)
+            if ('undefined' !== typeof table.dataset.peshToolsOrderId && !force)
             {
                 PeshToolsDbg && console.info(table.dataset.peshToolsOrderId);
                 PeshToolsDbg && console.log(PeshTools.run.orders[table.dataset.peshToolsOrderId]);
@@ -555,7 +558,7 @@
             }
 
             // Проверка метки пропуска таблицы.
-            if ('undefined' !== typeof table.dataset.peshToolsSkip)
+            if ('undefined' !== typeof table.dataset.peshToolsSkip && !force)
             {
                 return;
             }
@@ -617,11 +620,13 @@
      * Обработчик сообщений от фонового скрипта.
      * 
      * @param {Object} request
+     * @param {MessageSender} sender
+     * @param {Function} responseCallback
      * @returns {Void}
      */
-    PeshTools.embedded.fns.onmessage_hnd = function (request)
+    PeshTools.embedded.fns.onmessage_hnd = function (request, sender, responseCallback)
     {
-        PeshToolsDbg && console.info('@ PeshTools.embedded.fns.onmessage_hnd()', request);
+        PeshToolsDbg && console.info('@ PeshTools.embedded.fns.onmessage_hnd()', request, sender, responseCallback);
 
         switch (request.method)
         {
@@ -631,10 +636,18 @@
             case 'update.run':
                 PeshTools.embedded.fns.fetchRunDataRequest(true);
                 break;
+
+                /**
+                 * Пинг фоновым сценарием встраиваемого.
+                 */
+            case 'noop.ping':
+                responseCallback(request.bypass);
+                break;
+
         }
     };
 
-    // PeshTools.embedded.fns.onmessage_hnd = function (request)
+    // PeshTools.embedded.fns.onmessage_hnd = function (request, sender, responseCallback)
 
 
     /**
@@ -741,6 +754,9 @@
      */
     PeshTools.embedded.classes.order = function (orderTable)
     {
+        var force = 'undefined' === typeof orderTable.dataset.peshToolsSess ||
+                orderTable.dataset.peshToolsSess !== PeshTools.run.sess;
+
         /**
          * Идентификатор заказа.
          *
@@ -1070,7 +1086,7 @@
         }
 
         // проверка необходимости обработки таблицы
-        if (orderTable.dataset.peshToolsTag)
+        if (orderTable.dataset.peshToolsTag && !force)
         {
             // таблица не менялась
             return;
@@ -1321,6 +1337,7 @@
         {
             // Для не "Аренды курьера" - количество адресов доставки.
             var dropsDiv = document.createElement('div');
+            dropsDiv.id = 'peshToolsExtra' + this.id + 'Drops';
             dropsDiv.className = 'peshToolsDrops';
             dropsDiv.innerHTML = 'Итого адресов: <strong>' + this.dropsOverall + '</strong>';
             dropsBlock.appendChild(dropsDiv);
@@ -1328,6 +1345,7 @@
 
         // Процент комиссии.
         var commissionSup = document.createElement('sup');
+        commissionSup.id = 'peshToolsExtra' + this.id + 'Commission';
         commissionSup.className = 'peshToolsCommission';
         commissionSup.innerText = '{ ' + Math.round(this.commissionRate, 4) + '% }';
         commissionBlock.innerHTML = commissionBlock.innerHTML.replace(/(Комиссия.+?руб.)/, '$1' + commissionSup.outerHTML);
@@ -1336,6 +1354,7 @@
         {
             // Для не "Аренды курьера" - реальный заработок и реальный заработок на адрес доставки.
             var earningDiv = document.createElement('div');
+            earningDiv.id = 'peshToolsExtra' + this.id + 'Eranings';
             earningDiv.className = 'peshToolsEarning';
             earningDiv.innerHTML = '<strong>' + this.realEarning + '</strong> <sub>(' + this.earningPerDrop + ')</sub>';
             earningBlock.appendChild(earningDiv);
@@ -1344,6 +1363,7 @@
         // Пара отметок об успешной обработке таблицы заказа.
         this.$table.dataset.peshToolsTag = Math.random();
         this.$table.dataset.peshToolsOrderId = this.id;
+        this.$table.dataset.peshToolsSess = PeshTools.run.sess;
     };
 
     // PeshTools.embedded.classes.order = function (orderTable)
@@ -1366,7 +1386,7 @@
             PeshTools.run.$panelStickerLogo.src = PeshToolsENV.extension.getURL('/img/peshtools-blue.png');
         }
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'ga.pageview',
             page: '/embedded#panel-' + PeshTools.run.$panel.className,
             referrer: document.location.href,
@@ -1384,15 +1404,15 @@
      */
     PeshTools.embedded.fns.bootstrapUIModeEmbedded = function ()
     {
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'ga.pageview',
             page: '/embedded',
             referrer: document.referrer,
             title: document.title
         });
 
-        window.setInterval(function () {
-            PeshToolsENV.runtime.sendMessage({
+        PeshTools.run.aliveIntervalId = window.setInterval(function () {
+            PeshTools.embedded.fns.sendMessageWrapper({
                 method: 'ga.pageview',
                 nonInteraction: 1,
                 page: '/embedded#alive+panel-' + PeshTools.run.$panel.className,
@@ -1474,7 +1494,7 @@
      */
     PeshTools.embedded.fns.bootstrapUIModeOptions = function ()
     {
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'ga.pageview',
             page: '/options',
             referrer: document.referrer,
@@ -1689,7 +1709,7 @@
 
         PeshToolsDbg && console.info(PeshTools.run.filters);
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'filters',
             name: filter,
@@ -1807,7 +1827,7 @@
             value = Number.parseInt(value);
         }
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'filters',
             name: filter,
@@ -1981,7 +2001,7 @@
             value = Number.parseInt(value);
         }
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'filters',
             name: filter,
@@ -2100,7 +2120,7 @@
             value = Number.parseFloat(value);
         }
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'filters',
             name: filter,
@@ -2291,7 +2311,7 @@
 
             PeshTools.run.filters.execStrings = value;
 
-            PeshToolsENV.runtime.sendMessage({
+            PeshTools.embedded.fns.sendMessageWrapper({
                 method: 'config.save',
                 bank: 'filters',
                 name: 'execStrings',
@@ -2311,7 +2331,7 @@
 
         PeshTools.run.strings[string] = value;
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'strings',
             name: string,
@@ -2353,7 +2373,7 @@
         var stringDl = PeshTools.embedded.fns.bootstrapUIFiltersDrawStringsListItem(string);
         PeshTools.run.$.strings_fs.appendChild(stringDl);
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'strings',
             name: string,
@@ -2389,7 +2409,7 @@
 
         dl.parentNode.removeChild(dl);
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'strings.delete',
             name: string,
             scheduleUpdate: true,
@@ -2506,7 +2526,7 @@
             value = Number.parseFloat(value);
         }
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'filters',
             name: filter,
@@ -2628,7 +2648,7 @@
 
         PeshToolsDbg && console.warn(PeshTools.run.config);
 
-        PeshToolsENV.runtime.sendMessage({
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'config',
             name: option,
@@ -2661,6 +2681,152 @@
     };
 
     // PeshTools.embedded.fns.updateSendStatisticsNote = function ()
+
+
+    /**
+     * Обёртка вокруг метода PeshToolsENV.runtime.sendMessage.
+     * 
+     * Выполняет метод, перехватывая возможное исключение.
+     * Перехваченное исключение направляется в опциональный errorCallback.
+     * 
+     * @param {mixed} data
+     * @param {undefined|Function} callback
+     * @param {undefined|Function} errorCallback
+     * @throws {mixed} 
+     * @return void
+     * @since   0.3.0   2017-01-12
+     */
+    PeshTools.embedded.fns.sendMessageWrapper = function (data, callback, errorCallback)
+    {
+        var args = Array.prototype.slice.call(arguments, 0, 2);
+
+        try {
+            PeshToolsENV.runtime.sendMessage.apply(null, args);
+        } catch (e)
+        {
+            if ('undefined' !== typeof errorCallback)
+            {
+                errorCallback.apply(null, [{
+                        error: e,
+                        sourceData: data
+                    }]);
+
+                return;
+            }
+
+            throw e;
+        }
+    };
+
+    // PeshTools.embedded.fns.sendMessageWrapper = function (data, callback, errorCallback)
+
+
+    /**
+     * Завершает сеанс встраиваемого сценария.
+     * 
+     * Удаляет все лишние данные со страницы и убивает переменные.
+     * 
+     * @returns {Void}
+     * @since   0.3.0   2017-01-12
+     */
+    PeshTools.embedded.fns.shutdown = function ()
+    {
+        // Отменяем интервалы, которые доступны всегда.
+        window.clearInterval(PeshTools.run.noopIntervalId);
+        window.clearInterval(PeshTools.run.aliveIntervalId);
+
+        // Отменяем интервал тикера.
+        if (PeshTools.run.ticksIntervalId)
+        {
+            window.clearInterval(PeshTools.run.ticksIntervalId);
+        }
+
+        // Удаляем панель.
+        var panel = PeshTools.run.$panel;
+        panel.parentNode.removeChild(panel);
+
+        // Итерируем все элементы на странице...
+        var elems = document.body.getElementsByTagName("*");
+
+        for (var i in elems)
+        {
+            var elem = elems[i];
+
+            if ('undefined' === typeof elems[i])
+            {
+                continue;
+            }
+
+            // Удаляем элемент, идентификатор которого начинается с peshTools.
+            if (/^peshTools/.test(elem.id))
+            {
+                elem.parentNode.removeChild(elem);
+                continue;
+            }
+
+            // Удаляем из списка классов элемента классы peshTools*.
+            if (/peshTools/.test(elem.className))
+            {
+                elem.className = elem.className.replace(/\s*\b(peshTools.+?)\b\s*/g, ' ').replace(/\s+/g, ' ');
+                if ('' === elem.className.replace(/\s+/, ''))
+                {
+                    elem.removeAttribute('class');
+                }
+            }
+
+            for (var k in elem.dataset)
+            {
+                if (/^peshTools/.test(k))
+                {
+                    var attr = 'data-' + k.replace(/[A-Z]/g, function (match) {
+                        return '-' + match.toLowerCase();
+                    });
+
+                    elem.removeAttribute(attr);
+                }
+            }
+        }
+
+        // Удаляем стили встраиваемого сценария.
+        var css = PeshTools.run.$css;
+        css.parentNode.removeChild(css);
+
+        // Удаляем лишние классы у тега BODY.
+        var body = document.body;
+        body.className = body.className.replace(/\s*\b(peshTools.+?)\b\s*/g, ' ').replace(/\s+/g, ' ');
+        if ('' === body.className.replace(/\s+/, ''))
+        {
+            body.removeAttribute('class');
+        }
+
+        // Заводим таймер самоуничтожения.
+        window.setTimeout(function ()
+        {
+            delete PeshTools;
+            delete PeshToolsENV;
+            delete PeshToolsDbg;
+        }, 0);
+    };
+
+    // PeshTools.embedded.fns.shutdown = function ()
+
+
+    /**
+     * Обработчик ошибки пинга фонового сценария.
+     * 
+     * Выполняем самоуничтожение из-за потеряни связи с фоновым сценарием.
+     * 
+     * @param {Object} data
+     * @throws {mixed} 
+     * @return {Void}
+     * @since   0.3.0   2017-01-12
+     */
+    PeshTools.embedded.fns.noopPingErrorCallback = function (data)
+    {
+        PeshTools.embedded.fns.shutdown();
+    };
+
+    // PeshTools.embedded.fns.noopPingErrorCallback = function (data)
 
 
     /**
@@ -2757,6 +2923,7 @@
         }
 
         window.clearInterval(PeshTools.run.ticksIntervalId);
+        PeshTools.run.ticksIntervalId = null;
 
         PeshTools.run.$panelStickerCountdown.innerHTML = '⌛';
         PeshTools.run.$panelStickerCountdown.className = 'hide';
@@ -2784,6 +2951,8 @@
         PeshTools.run.orders = {};
         PeshTools.run.filters = {};
         PeshTools.run.ticksIntervalId = null;
+        PeshTools.run.aliveIntervalId = null;
+        PeshTools.run.noopIntervalId = null;
 
         PeshTools.run.$ = {};
 
@@ -2864,14 +3033,39 @@
         PeshToolsENV.runtime.onMessage.addListener(PeshTools.embedded.fns.onmessage_hnd);
 
         // наши стили тоже сюда подтягиваем (вдруг заработают) 
-        var embedded_css = document.createElement("link");
-        embedded_css.rel = "stylesheet";
-        embedded_css.type = "text/css";
-        embedded_css.href = PeshToolsENV.extension.getURL('/css/peshtools.embedded.css');
+        var embedded_css_href = PeshToolsENV.extension.getURL('/css/peshtools.embedded.css');
+        var embedded_css_exists = false;
+        var stylesheet_links = document.querySelectorAll('link[rel=stylesheet]');
+        for (var i in stylesheet_links)
+        {
+            if (stylesheet_links[i].href !== embedded_css_href)
+            {
+                continue;
+            }
 
-        PeshTools.run.$head.appendChild(embedded_css);
+            if (embedded_css_exists)
+            {
+                stylesheet_links[i].parentNode.removeChild(stylesheet_links[i]);
+                continue;
+            }
 
-        PeshToolsENV.runtime.sendMessage({
+            PeshTools.run.$css = stylesheet_links[i];
+            embedded_css_exists = true;
+        }
+
+        if (!embedded_css_exists)
+        {
+            var embedded_css = document.createElement("link");
+            embedded_css.rel = "stylesheet";
+            embedded_css.type = "text/css";
+            embedded_css.href = PeshToolsENV.extension.getURL('/css/peshtools.embedded.css');
+
+            PeshTools.run.$css = embedded_css;
+
+            PeshTools.run.$head.appendChild(embedded_css);
+        }
+
+        PeshTools.embedded.fns.sendMessageWrapper({
             method: 'skel.fetch'
         }, PeshTools.embedded.fns.bootstrapSkelProcessor);
     };
@@ -2892,6 +3086,7 @@
             }
         }
 
+        PeshTools.run.sess = response.sess;
         PeshTools.run.config = response.config;
         PeshTools.run.filters = response.filters;
         PeshTools.run.strings = response.strings;
@@ -2919,6 +3114,16 @@
                 PeshTools.embedded.fns.ticksStart();
             }, 0);
         }
+
+        PeshTools.run.noopIntervalId = window.setInterval(function ()
+        {
+            PeshTools.embedded.fns.sendMessageWrapper({
+                method: 'noop.ping'
+            },
+                    void 0,
+                    PeshTools.embedded.fns.noopPingErrorCallback
+                    );
+        }, 2000);
 
         //window.setInterval(PeshTools.embedded.fns.tick, 1000);
     };

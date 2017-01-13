@@ -16,7 +16,7 @@
  * 
  * @since   0.1.0   2016-12-16
  * @version 0.3.0   2017-01-11
- * @date    2017-01-11
+ * @date    2017-01-13
  * 
  * @returns {Void}
  */
@@ -28,7 +28,7 @@
 
     PeshTools.core = {};
     PeshTools.core.fns = {};
-    
+
     /**
      * Изменяет иконку приложения, текст и цвет бэджика.
      * 
@@ -38,22 +38,22 @@
      */
     PeshTools.core.fns.badge = function (data)
     {
-        if('undefined' !== typeof data.color)
+        if ('undefined' !== typeof data.color)
         {
             PeshToolsENV.browserAction.setBadgeBackgroundColor({color: data.color});
         }
-        
-        if('undefined' !== typeof data.text)
+
+        if ('undefined' !== typeof data.text)
         {
             PeshToolsENV.browserAction.setBadgeText({text: '' + data.text + ''});
         }
-        
-        if('undefined' !== typeof data.icon)
+
+        if ('undefined' !== typeof data.icon)
         {
             PeshToolsENV.browserAction.setIcon({path: data.icon});
         }
     };
-    
+
     // PeshTools.core.fns.badge = function (data)
 
 
@@ -71,6 +71,11 @@
         PeshToolsDbg && console.log('! PeshTools.core.fns.onmessage_hnd()', typeof request, typeof sender, typeof responseCallback);
 
         request.sender = sender;
+
+        if ('undefined' !== typeof PeshTools.run.tabs[sender.tab.id])
+        {
+            PeshTools.run.tabs[sender.tab.id].status = 4;
+        }
 
         switch (request.method)
         {
@@ -119,6 +124,7 @@
                  */
             case 'skel.fetch':
                 var response = {
+                    sess: PeshTools.run.sess,
                     skel: PeshTools.run.skel,
                     config: PeshTools.run.config,
                     filters: PeshTools.run.filters,
@@ -175,7 +181,7 @@
             case 'ga.pageview':
                 PeshTools.core.fns.googleAnalyticsSendEvent(request);
                 break;
-                
+
                 /**
                  * Демонстрация бэджа с количеством заказов.
                  * 
@@ -187,22 +193,27 @@
                     color: '#ffffff',
                     text: ''
                 };
-                
+
                 if (request.data.ordersVisible)
                 {
                     data.color = '#1bb06c';
                     data.text = request.data.ordersVisible;
-                }
-                else
+                } else
                 {
                     data.color = '#18649e';
                     data.text = request.data.ordersOverall;
                 }
-                
+
                 PeshTools.core.fns.badge(data);
-                
+
                 break;
-                
+
+                /**
+                 * Пинг встраиваемым сценарием фонового сценария.
+                 */
+            case 'noop.ping':
+                responseCallback(request.bypass);
+                break;
         }
 
         // switch (request.method)
@@ -262,25 +273,7 @@
             return;
         }
 
-        PeshToolsENV.tabs.executeScript(
-                details.tabId,
-                {
-                    file: '/js/peshtools.embedded.js'
-                },
-                function ()
-                {
-                    if (PeshToolsENV.runtime.lastError)
-                    {
-                        if (/Cannot access contents of url.*Extension manifest must request permission to access this host/.test(PeshToolsENV.runtime.lastError.message))
-                        {
-                            return;
-                        }
-
-                        // An error occurred :(
-                        console.log("WHY ERROR: ", details.tabId, PeshToolsENV.runtime.lastError);
-                    }
-                }
-        );
+        PeshTools.core.fns.injectEmbedded(details.tabId);
 
         return;
     };
@@ -738,6 +731,175 @@
 
 
     /**
+     * Регулярная проверка открытых вкладок на выполнение встраиваемого сценария.
+     * 
+     * @return {Void}
+     * @since   0.3.0   2017-01-12
+     */
+    PeshTools.core.fns.healthCheck = function ()
+    {
+        // Инъекция встраиваемого сценария во все вкладки, не ответившие на NOOP-PING.
+        for (var tabId in PeshTools.run.tabs)
+        {
+            // Отбор по совпадению адреса.
+            if (1 === PeshTools.run.tabs[tabId].status)
+            {
+                PeshTools.core.fns.injectEmbedded(tabId);
+                PeshTools.run.tabs[tabId].status = 3;
+
+                continue;
+            }
+
+            // Отбор по тишине в ответ на NOOP-PING.
+            if (2 === PeshTools.run.tabs[tabId].status)
+            {
+                PeshTools.core.fns.injectEmbedded(tabId);
+                PeshTools.run.tabs[tabId].status = 3;
+
+                continue;
+            }
+        }
+
+        // Обнуление живых вкладок.
+        for (var tabId in PeshTools.run.tabs)
+        {
+            // Ранее обнуленная - готовится к удалению.
+            if (0 === PeshTools.run.tabs[tabId].status)
+            {
+                PeshTools.run.tabs[tabId].status = -1;
+                continue;
+            }
+
+            // Ранее живая - обнуляется.
+            if (4 === PeshTools.run.tabs[tabId].status)
+            {
+                PeshTools.run.tabs[tabId].status = 0;
+            }
+        }
+
+        // Выборка вкладок со списком заказов.
+        PeshToolsENV.tabs.query({
+            url: 'http://peshkariki.ru/order/courOrders.html*'
+        }, function (tabs)
+        {
+            for (var i in tabs)
+            {
+                var tabId = tabs[i].id;
+
+                if ('undefined' === typeof PeshTools.run.tabs[tabId])
+                {
+                    PeshTools.run.tabs[tabId] = {
+                        status: 0,
+                        stats: {}
+                    };
+                }
+
+                if (0 !== PeshTools.run.tabs[tabId].status)
+                {
+                    continue;
+                }
+
+                PeshTools.run.tabs[tabs[i].id].status = 1;
+
+                PeshToolsENV.tabs.sendMessage(tabs[i].id, {
+                    method: 'noop.ping',
+                    bypass: [tabs[i].id]
+                }, PeshTools.core.fns.healthCheckMarkAsAlive);
+            }
+        });
+
+        // Анализ вкладок.
+        var anyTab = false;
+
+        for (var tabId in PeshTools.run.tabs)
+        {
+            // Удаление отмеченных на удаление.
+            if (-1 > PeshTools.run.tabs[tabId].status)
+            {
+                delete PeshTools.run.tabs[tabId];
+                continue;
+            }
+
+            // Пометка на удаление подготовленных к удалению
+            if (-1 === PeshTools.run.tabs[tabId].status)
+            {
+                PeshTools.run.tabs[tabId].status--;
+                continue;
+            }
+
+            anyTab = true;
+        }
+
+        // Если живчиков нет - убираем бэджик.
+        if (!anyTab)
+        {
+            PeshTools.core.fns.badge({
+                "text": "",
+                "color": "#000000"
+            });
+        }
+    };
+
+    // PeshTools.core.fns.healthCheck = function ()
+
+
+    /**
+     * Отмечает живчиком вкладку, ответившую на NOOP-PING.
+     * 
+     * @param {mixed} tabId
+     * @return {Void}
+     * @since   0.3.0   2017-01-12
+     */
+    PeshTools.core.fns.healthCheckMarkAsAlive = function (tabId)
+    {
+        if (isNaN(tabId))
+        {
+            return;
+        }
+
+        tabId = Number.parseInt(tabId);
+        PeshTools.run.tabs[tabId].status = 4;
+    };
+
+    // PeshTools.core.fns.healthCheckMarkAsAlive = function (tabId)
+
+
+    /**
+     * Производит инъекцию встраиваемого сценария во вкладку.
+     * 
+     * @param {Number} tabId
+     * @return {Void}
+     * @since   0.3.0   2017-01-12
+     */
+    PeshTools.core.fns.injectEmbedded = function (tabId)
+    {
+        tabId = Number.parseInt(tabId);
+
+        PeshToolsENV.tabs.executeScript(
+                tabId,
+                {
+                    file: '/js/peshtools.embedded.js'
+                },
+                function ()
+                {
+                    if (PeshToolsENV.runtime.lastError)
+                    {
+                        if (/Cannot access contents of url.*Extension manifest must request permission to access this host/.test(PeshToolsENV.runtime.lastError.message))
+                        {
+                            return;
+                        }
+
+                        // An error occurred :(
+                        console.log("WHY ERROR: ", tabId, PeshToolsENV.runtime.lastError);
+                    }
+                }
+        );
+    };
+
+    // PeshTools.core.fns.injectEmbedded = function (tabId)
+
+
+    /**
      * Начальная загрузка фонового сценария.
      * 
      * @return {Void}
@@ -746,6 +908,8 @@
     {
         // Мусор момент исполнения.
         PeshTools.run = {};
+        PeshTools.run.tabs = {};
+        PeshTools.run.sess = PeshTools.core.fns.generateUUID();
 
         var manifest = PeshToolsENV.runtime.getManifest();
 
@@ -795,6 +959,8 @@
 //        PeshToolsENV.tabs.onRemoved.addListener(PeshTools.core.fns.onremoved_hnd);
 
         PeshToolsENV.webNavigation.onDOMContentLoaded.addListener(PeshTools.core.fns.ondomcontentloaded_hnd);
+
+        PeshTools.run.healhCheckIntervalId = window.setInterval(PeshTools.core.fns.healthCheck, 2000);
     };
 
     // PeshTools.core.fns.bootstrap = function ()
