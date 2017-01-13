@@ -1300,7 +1300,10 @@
                 this.fullPledge = this.pledge + this.commission;
 
                 var weightData = /Масса:\s+(\d+)\s+г./.exec(currentValue.innerText);
-                this.weight = Number.parseFloat((weightData[1] / 1000).toFixed(3));
+                if (weightData)
+                {
+                    this.weight = Number.parseFloat((weightData[1] / 1000).toFixed(3));
+                }
 
                 continue;
             }
