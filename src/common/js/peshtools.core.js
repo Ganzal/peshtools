@@ -1352,7 +1352,10 @@
 
         PeshToolsENV.webNavigation.onDOMContentLoaded.addListener(PeshTools.core.fns.ondomcontentloaded_hnd);
 
-        PeshTools.run.healhCheckIntervalId = window.setInterval(PeshTools.core.fns.healthCheck, 2000);
+        PeshTools.run.healhCheckIntervalId = window.setInterval(function ()
+        {
+                PeshTools.core.fns.healthCheck();
+        }, 2000);
     };
 
     // PeshTools.core.fns.bootstrap = function ()
