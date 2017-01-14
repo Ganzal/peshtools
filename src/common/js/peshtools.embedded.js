@@ -628,10 +628,185 @@
             }
         }
 
+        PeshTools.embedded.fns.updateUIFilters();
+        PeshTools.embedded.fns.updateUIStrings();
+        PeshTools.embedded.fns.updateUIConfig();
+
         PeshTools.embedded.fns.updateSendStatisticsNote();
     };
 
     // PeshTools.embedded.fns.updateUI = function ()
+
+
+    /**
+     * Обновляет значения фильтров на панели.
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.embedded.fns.updateUIFilters = function ()
+    {
+        for (var f in PeshTools.run.filters)
+        {
+            var value = PeshTools.run.filters[f];
+
+            switch (f)
+            {
+                // int
+                case 'maxFullPledge':
+                case 'minRealEarning':
+
+                // float
+                case 'maxDistance':
+                case 'maxWeight':
+                    PeshTools.run.$[f].value = value;
+                    break;
+
+                    // checkbox
+                case 'execStrings':
+                case 'fullPledgeMathDisplay':
+                case 'maxDistanceApply':
+                case 'maxFullPledgeApply':
+                case 'maxWeightApply':
+                case 'minRealEarningApply':
+                    PeshTools.run.$[f].checked = !!value;
+
+                    switch (f)
+                    {
+                        case 'maxDistanceApply':
+                        case 'maxFullPledgeApply':
+                        case 'maxWeightApply':
+                        case 'minRealEarningApply':
+                            var inputId = f.replace(/(Apply)$/, '');
+                            PeshTools.run.$[inputId].disabled = !value;
+                            break;
+                    }
+                    break;
+
+                    // quad-state
+                case 'catchToday':
+                case 'catchTomorrow':
+                case 'catchOther':
+                case 'dropToday':
+                case 'dropTomorrow':
+                case 'dropOther':
+                case 'propAutocomplete':
+                case 'propRecharge':
+                case 'propBuyout':
+                case 'propAirport':
+                case 'propHooking':
+                case 'propWagon':
+                case 'propFragile':
+                case 'propOversized':
+                case 'propWaiting':
+                case 'propPhotoOfShipment':
+                case 'propPhotoOfCertificate':
+                case 'propPhotoOfCheck':
+                    PeshTools.run.$[f + value].checked = true;
+                    break;
+            }
+
+        }
+    };
+
+    // PeshTools.embedded.fns.updateUIFilters = function ()
+
+
+    /**
+     * Обновляет список и настройки строк на панели.
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.embedded.fns.updateUIStrings = function ()
+    {
+        // Итерация имеющихся строк для поиска удаленных.
+        // Быстрее работать с кнопками удаления - там чистое значение строки есть в dataset.
+        var buttons = document.getElementsByTagName('button');
+
+        for (var b in buttons)
+        {
+            if (!/string.+?Delete/.test(buttons[b].id))
+            {
+                continue;
+            }
+
+            var string = buttons[b].dataset.value;
+
+            if ('undefined' !== typeof PeshTools.run.strings[string])
+            {
+                continue;
+            }
+
+            var dl = PeshTools.run.$['string' + string + '_dl'];
+            if ('undefined' === typeof dl)
+            {
+                continue;
+            }
+
+            dl.parentNode.removeChild(dl);
+
+            delete PeshTools.run.$['string' + string + '_dl'];
+            delete PeshTools.run.$['string' + string + '_cnt'];
+            delete PeshTools.run.$['string' + string + 'Require'];
+            delete PeshTools.run.$['string' + string + 'Bypass'];
+            delete PeshTools.run.$['string' + string + 'Exclude'];
+            delete PeshTools.run.$['string' + string + 'Delete'];
+        }
+
+        // Итерация списка слов для поиска добавленных.
+        for (var string in PeshTools.run.strings)
+        {
+            if (!PeshTools.run.strings.hasOwnProperty(string))
+            {
+                continue;
+            }
+
+            var dl = PeshTools.run.$['string' + string + '_dl'];
+            if ('undefined' !== typeof dl)
+            {
+                PeshTools.run.$['string' + string + PeshTools.run.strings[string]].checked = true;
+                continue;
+            }
+
+            var stringRow = PeshTools.embedded.fns.bootstrapUIFiltersDrawStringsListItem(string);
+            PeshTools.run.$.strings_fs.appendChild(stringRow);
+        }
+    };
+
+    // PeshTools.embedded.fns.updateUIStrings = function ()
+
+
+    /**
+     * Обновляет значения опций на панели.
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.embedded.fns.updateUIConfig = function ()
+    {
+        for (var c in PeshTools.run.config)
+        {
+            var value = PeshTools.run.config[c];
+            switch (c)
+            {
+                case "selfAutoupdate":
+                case "hidePeshCountdowns":
+                case "showCommissionRate":
+                case "showSelfCountdown":
+                case "sendStatistics":
+                case "selfDebug":
+                    PeshTools.run.$[c].checked = !!value;
+                    break;
+
+                case "badgeBlinking":
+                    PeshTools.run.$[c + value].checked = true;
+                    break;
+            }
+        }
+    };
+
+    // PeshTools.embedded.fns.updateUIConfig = function ()
 
 
     /**
@@ -2645,6 +2820,13 @@
         var dl = PeshTools.run.$['string' + string + '_dl'];
 
         dl.parentNode.removeChild(dl);
+
+        delete PeshTools.run.$['string' + string + '_dl'];
+        delete PeshTools.run.$['string' + string + '_cnt'];
+        delete PeshTools.run.$['string' + string + 'Require'];
+        delete PeshTools.run.$['string' + string + 'Bypass'];
+        delete PeshTools.run.$['string' + string + 'Exclude'];
+        delete PeshTools.run.$['string' + string + 'Delete'];
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'strings.delete',
