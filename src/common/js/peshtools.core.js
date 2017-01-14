@@ -376,6 +376,13 @@
                     PeshToolsDbg = !!request.value;
                 }
 
+                if ('filters' === request.bank && 'execStrings' === request.name)
+                {
+                    PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsExec, {
+                        title: 'Фильтр ' + (!PeshTools.run.filters.execStrings ? 'не ' : '') + 'активирован'
+                    });
+                }
+
                 if (request.scheduleUpdate)
                 {
                     PeshTools.core.fns.postUpdateHook(true);
@@ -453,6 +460,22 @@
                     'title': request.title
                 });
 
+                break;
+
+                /**
+                 * Регистрирует текущее выделение на странице и готовит контекстное меню.
+                 */
+            case 'strings.selection':
+                if ('undefined' !== typeof PeshTools.run.selections[sender.tab.id])
+                {
+                    if (PeshTools.run.selections[sender.tab.id] === request.value)
+                    {
+                        return;
+                    }
+                }
+
+                PeshTools.run.selections[sender.tab.id] = request.value;
+                PeshTools.core.fns.stringsUpdateContextMenu(sender.tab.id);
                 break;
 
                 /**
@@ -1290,6 +1313,345 @@
 
 
     /**
+     * Вставка или обновление слова через контекстное меню.
+     * 
+     * @param {Object} data
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.stringsChangeByContextMenu = function (data)
+    {
+        PeshToolsDbg && console.info(data);
+
+        var string = data.string.trim().toLowerCase();
+        var ga_pageview_page = '/strings/' + string + '/' + data.value;
+
+        if ('undefined' === typeof PeshTools.run.strings[string])
+        {
+            ga_pageview_page += '#added-via-context-menu';
+        } else
+        {
+            ga_pageview_page += '#via-context-menu';
+        }
+
+        PeshTools.core.fns.googleAnalyticsSendEvent({
+            'page': ga_pageview_page,
+            referrer: document.location.href,
+            title: document.title
+        });
+
+        PeshTools.run.strings[string] = data.value;
+        PeshTools.core.fns.configSave();
+
+        PeshTools.core.fns.postUpdateHook(true);
+    };
+
+    // PeshTools.core.fns.stringsChangeByContextMenu = function (data)
+
+
+    /**
+     * Обработчик выбора опции "Требовать" контекстного меню.
+     * 
+     * @param {Object} details
+     * @param {Object} tab
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.stringsOnContextMenuActionRequire_hnd = function (details, tab)
+    {
+        PeshToolsDbg && console.debug(details, tab);
+
+        PeshTools.core.fns.stringsChangeByContextMenu({
+            string: details.selectionText,
+            value: 'Require'
+        });
+    };
+
+    // PeshTools.core.fns.stringsOnContextMenuActionRequire_hnd = function (details, tab)
+
+
+    /**
+     * Обработчик выбора опции "Допускать" контекстного меню.
+     * 
+     * @param {Object} details
+     * @param {Object} tab
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.stringsOnContextMenuActionBypass_hnd = function (details, tab)
+    {
+        PeshToolsDbg && console.debug(details, tab);
+
+        PeshTools.core.fns.stringsChangeByContextMenu({
+            string: details.selectionText,
+            value: 'Bypass'
+        });
+    };
+
+    // PeshTools.core.fns.stringsOnContextMenuActionBypass_hnd = function (details, tab)
+
+
+    /**
+     * Обработчик выбора опции "Исключать" контекстного меню.
+     * 
+     * @param {Object} details
+     * @param {Object} tab
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.stringsOnContextMenuActionExclude_hnd = function (details, tab)
+    {
+        PeshToolsDbg && console.debug(details, tab);
+
+        PeshTools.core.fns.stringsChangeByContextMenu({
+            string: details.selectionText,
+            value: 'Exclude'
+        });
+    };
+
+    // PeshTools.core.fns.stringsOnContextMenuActionExclude_hnd = function (details, tab)
+
+
+    /**
+     * Обновляет контекстного меню в контексте фильтра "Магия букв".
+     * 
+     * @param {Number} tabId
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.stringsUpdateContextMenu = function (tabId)
+    {
+        PeshToolsDbg && console.debug(arguments);
+
+        var data = PeshTools.core.fns.stringsUpdateContextMenuResolve(tabId);
+
+        if (!data)
+        {
+            return;
+        }
+
+        PeshToolsDbg && console.info(data);
+
+        if (PeshTools.run.ctxMenuStringsAboutTitle !== data.AboutTitle)
+        {
+            PeshTools.run.ctxMenuStringsAboutTitle = data.AboutTitle;
+            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsAbout, {
+                title: data.AboutTitle
+            });
+        }
+
+        if (PeshTools.run.ctxMenuStringsRequireEnabled !== data.RequireEnabled)
+        {
+            PeshTools.run.ctxMenuStringsRequireEnabled = data.RequireEnabled;
+            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsRequire, {
+                enabled: data.RequireEnabled
+            });
+        }
+
+        if (PeshTools.run.ctxMenuStringsBypassEnabled !== data.BypassEnabled)
+        {
+            PeshTools.run.ctxMenuStringsBypassEnabled = data.BypassEnabled;
+            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsBypass, {
+                enabled: data.BypassEnabled
+            });
+        }
+
+        if (PeshTools.run.ctxMenuStringsExcludeEnabled !== data.ExcludeEnabled)
+        {
+            PeshTools.run.ctxMenuStringsExcludeEnabled = data.ExcludeEnabled;
+            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsExclude, {
+                enabled: data.ExcludeEnabled
+            });
+        }
+
+    };
+
+    // PeshTools.core.fns.stringsUpdateContextMenu = function (tabId)
+
+
+    /**
+     * Готовит план обновления контекстного меню в контексте фильтра "Магия букв".
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.stringsUpdateContextMenuResolve = function (tabId)
+    {
+        if ('undefined' === typeof PeshTools.run.selections[tabId])
+        {
+            return;
+        }
+
+        var newString = PeshTools.run.selections[tabId];
+
+        if ('' === newString)
+        {
+            return {
+                AboutTitle: 'Пустая строка',
+                RequireEnabled: false,
+                BypassEnabled: false,
+                ExcludeEnabled: false
+            };
+        }
+
+        if ('undefined' !== typeof PeshTools.run.strings[newString])
+        {
+            var data = {
+                AboutTitle: 'Изменить',
+                RequireEnabled: true,
+                BypassEnabled: true,
+                ExcludeEnabled: true
+            };
+
+            data[PeshTools.run.strings[newString] + 'Enabled'] = false;
+
+            return data;
+        }
+
+        var AboutTitle = ['Добавить'];
+//        var substrings = 0;
+//        var supstrings = 0;
+//
+//        for (var string in PeshTools.run.strings)
+//        {
+//            console.log(string, string.indexOf(newString), newString.indexOf(string));
+//
+//            // Новая строка входит в известную
+//            if (-1 !== string.indexOf(newString))
+//            {
+//                supstrings++;
+//            }
+//
+//            // Известная строка входит в новую
+//            if (-1 !== newString.indexOf(string))
+//            {
+//                substrings++;
+//            }
+//        }
+//        ;
+//
+//        console.info(substrings, supstrings);
+//
+//        if (supstrings)
+//        {
+//            AboutTitle.push('входит в: ' + supstrings);
+//        }
+//
+//        if (substrings)
+//        {
+//            AboutTitle.push('поглощает: ' + substrings);
+//        }
+
+        return {
+            AboutTitle: AboutTitle.join(', '),
+            RequireEnabled: true,
+            BypassEnabled: true,
+            ExcludeEnabled: true
+        };
+    };
+
+    // PeshTools.core.fns.stringsUpdateContextMenuResolve = function (tabId)
+
+
+    /**
+     * Инициализация контекстного меню.
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.core.fns.bootstrapContextMenu = function ()
+    {
+        var urls = [
+            'http://peshkariki.ru/order/courOrders.html*'
+        ];
+
+        PeshTools.run.ctxMenuRoot = PeshToolsENV.contextMenus.create({
+            id: 'PeshToolsCMRoot',
+            title: 'PeshTools',
+            contexts: ['selection'],
+            documentUrlPatterns: urls
+        });
+
+        PeshTools.run.ctxMenuStrings = PeshToolsENV.contextMenus.create({
+            parentId: PeshTools.run.ctxMenuRoot,
+            id: 'PeshToolsCMStrings',
+            title: '"%s" в Магии букв',
+            contexts: ['selection'],
+            documentUrlPatterns: urls
+        });
+
+        if (!/firefox|seamonkey/i.test(navigator.userAgent))
+        {
+            PeshTools.run.ctxMenuStringsAboutTitle = 'Неизвестно';
+            PeshTools.run.ctxMenuStringsAbout = PeshToolsENV.contextMenus.create({
+                parentId: PeshTools.run.ctxMenuStrings,
+                id: 'PeshToolsCMStringsAbout',
+                title: 'Неизвестно',
+                contexts: ['selection'],
+                documentUrlPatterns: urls,
+                enabled: false
+            });
+
+
+            PeshTools.run.ctxMenuStringsSeparator0 = PeshToolsENV.contextMenus.create({
+                parentId: PeshTools.run.ctxMenuStrings,
+                id: 'PeshToolsCMStringsSeparator0',
+                type: 'separator',
+                contexts: ['selection']
+            });
+        }
+
+        PeshTools.run.ctxMenuStringsRequireEnabled = true;
+        PeshTools.run.ctxMenuStringsRequire = PeshToolsENV.contextMenus.create({
+            parentId: PeshTools.run.ctxMenuStrings,
+            id: 'PeshToolsCMStringsRequire',
+            title: '[!] Требовать',
+            contexts: ['selection'],
+            documentUrlPatterns: urls,
+            onclick: PeshTools.core.fns.stringsOnContextMenuActionRequire_hnd
+        });
+
+        PeshTools.run.ctxMenuStringsBypassEnabled = true;
+        PeshTools.run.ctxMenuStringsBypass = PeshToolsENV.contextMenus.create({
+            parentId: PeshTools.run.ctxMenuStrings,
+            id: 'PeshToolsCMStringsBypass',
+            title: '[0] Допускать',
+            contexts: ['selection'],
+            documentUrlPatterns: urls,
+            onclick: PeshTools.core.fns.stringsOnContextMenuActionBypass_hnd
+        });
+
+        PeshTools.run.ctxMenuStringsExcludeEnabled = true;
+        PeshTools.run.ctxMenuStringsExclude = PeshToolsENV.contextMenus.create({
+            parentId: PeshTools.run.ctxMenuStrings,
+            id: 'PeshToolsCMStringsExclude',
+            title: '[x] Исключать',
+            contexts: ['selection'],
+            documentUrlPatterns: urls,
+            onclick: PeshTools.core.fns.stringsOnContextMenuActionExclude_hnd
+        });
+
+        PeshTools.run.ctxMenuStringsSeparator1 = PeshToolsENV.contextMenus.create({
+            parentId: PeshTools.run.ctxMenuStrings,
+            id: 'PeshToolsCMStringsSeparator1',
+            type: 'separator',
+            contexts: ['selection']
+        });
+
+        PeshTools.run.ctxMenuStringsExec = PeshToolsENV.contextMenus.create({
+            parentId: PeshTools.run.ctxMenuStrings,
+            id: 'PeshToolsCMStringsExec',
+            title: 'Фильтр ' + (!PeshTools.run.filters.execStrings ? 'не ' : '') + 'активирован',
+            contexts: ['selection'],
+            documentUrlPatterns: urls,
+            enabled: false
+        });
+    };
+
+    // PeshTools.core.fns.bootstrapContextMenu = function ()
+
+
+    /**
      * Начальная загрузка фонового сценария.
      * 
      * @return {Void}
@@ -1302,6 +1664,7 @@
         PeshTools.run.sess = PeshTools.core.fns.generateUUID();
         PeshTools.run.badgeBlinkDelay = 200;
         PeshTools.run.badgeBlinkDemo = false;
+        PeshTools.run.selections = {};
 
         var manifest = PeshToolsENV.runtime.getManifest();
 
@@ -1323,6 +1686,9 @@
         {
             PeshTools.core.skel.selfConfig.sendStatistics = false;
             ga_data_aip = 1;
+
+            // Маленький привет пользователям Firefox.
+            PeshTools.core.fns.stringsUpdateContextMenu = function () {};
         }
 
         PeshTools.run.getGADataAIP = (function () {
@@ -1333,6 +1699,9 @@
 
         // Чтение конфигурации.
         PeshTools.core.fns.configLoad();
+
+        // Инициализация контекстного меню.
+        PeshTools.core.fns.bootstrapContextMenu();
 
         // Определение режима отладки.
         PeshToolsDbg = PeshTools.run.config.selfDebug;
@@ -1354,7 +1723,7 @@
 
         PeshTools.run.healhCheckIntervalId = window.setInterval(function ()
         {
-                PeshTools.core.fns.healthCheck();
+            PeshTools.core.fns.healthCheck();
         }, 2000);
     };
 

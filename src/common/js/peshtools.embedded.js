@@ -1683,6 +1683,8 @@
 
         PeshTools.embedded.fns.updateUI();
         PeshTools.embedded.fns.updateCourierBalance();
+
+        document.addEventListener('selectionchange', PeshTools.embedded.fns.onSelectionChange);
     };
 
     // PeshTools.embedded.fns.bootstrapUIModeEmbedded = function ()
@@ -3066,6 +3068,9 @@
         window.clearInterval(PeshTools.run.noopIntervalId);
         window.clearInterval(PeshTools.run.aliveIntervalId);
 
+        // Удаляем слушателей событий.
+        document.removeEventListener('selectionchange', PeshTools.embedded.fns.onSelectionChange);
+
         // Отменяем интервал тикера.
         if (PeshTools.run.ticksIntervalId)
         {
@@ -3261,6 +3266,37 @@
     };
 
     // PeshTools.embedded.fns.ticksStop = function ()
+
+
+    /**
+     * Обработчик выделения текста на странице.
+     * 
+     * Отправляет строку фоновому сценарию для подготовки контекстного меню.
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.embedded.fns.onSelectionChange = function ()
+    {
+        var selection = window.getSelection().toString().trim().toLowerCase();
+        var token = Math.random();
+
+        PeshTools.run.stringsSelectionToken = token;
+
+        window.setTimeout(function () {
+            if (PeshTools.run.stringsSelectionToken != token)
+            {
+                return;
+            }
+
+            PeshTools.embedded.fns.sendMessageWrapper({
+                method: 'strings.selection',
+                value: selection
+            });
+        }, 100);
+    };
+
+    // PeshTools.embedded.fns.onSelectionChange = function ()
 
 
     /**
