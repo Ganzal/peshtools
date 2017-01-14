@@ -521,6 +521,7 @@
     PeshTools.core.fns.postUpdateHook = function (interaction)
     {
         PeshToolsENV.tabs.query({
+            status: "complete",
             url: 'http://peshkariki.ru/order/courOrders.html*'
         }, function (tabs)
         {
@@ -1192,6 +1193,7 @@
 
         // Выборка вкладок со списком заказов.
         PeshToolsENV.tabs.query({
+            status: "complete",
             url: 'http://peshkariki.ru/order/courOrders.html*'
         }, function (tabs)
         {
