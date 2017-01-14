@@ -13,8 +13,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.3.0   2017-01-13
- * @date    2017-01-13
+ * @version 0.4.0   2017-01-14
+ * @date    2017-01-14
  */
 
 @import "_variables.less";
@@ -394,6 +394,39 @@
 #peshToolsOptionBadgeBlinking_dl #badgeBlinkingNone:checked + label {
     color: white;
     background-color: @peshtools-color-grey;
+}
+
+.peshToolsHideFullPledgeMath .peshToolsExtraFullPledgeMath {
+    display: none;
+}
+
+.peshToolsExtraFullPledgeMath:before {
+    content: ' (';
+}
+.peshToolsExtraFullPledgeMath:after {
+    content: ')';
+}
+
+strong[id$='ClosingBalance'] {
+    font-size: 110%;
+}
+
+span[id$='RealClosingBalance'] {
+    font-size: 80%;
+}
+
+span[id$='RealClosingBalance']:before {
+    content: ' / ';
+    font-size: 160%;
+    color: @peshtools-color-grey;
+}
+
+.peshToolsClosingBalancePositive {
+    color: @peshtools-color-green;
+}
+
+.peshToolsClosingBalanceNegative {
+    color: @peshtools-color-red;
 }
 
 /* eof: /css/peshtools.embedded.less */

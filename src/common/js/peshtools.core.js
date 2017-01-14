@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.3.0   2017-01-13
- * @date    2017-01-13
+ * @version 0.4.0   2017-01-14
+ * @date    2017-01-14
  * 
  * @returns {Void}
  */
@@ -832,6 +832,7 @@
             "dropTomorrow": "Bypass",
             "dropOther": "Bypass",
             "execStrings": false,
+            "fullPledgeMathDisplay": true,
             "maxDistanceApply": false,
             "maxDistance": 3.3,
             "maxFullPledgeApply": false,

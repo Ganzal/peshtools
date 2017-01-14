@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.3.0   2017-01-13
- * @date    2017-01-13
+ * @version 0.4.0   2017-01-14
+ * @date    2017-01-14
  * 
  * @returns {Void}
  */
@@ -91,6 +91,7 @@
         }
 
         PeshTools.embedded.fns.updateUI();
+        PeshTools.embedded.fns.updateCourierBalance();
 
         if (response.forceUpdate || response.config.selfAutoupdate)
         {
@@ -616,10 +617,123 @@
             }
         }
 
+        if (PeshTools.run.filters.fullPledgeMathDisplay)
+        {
+            PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/\s*peshToolsHideFullPledgeMath\s*/, '');
+        } else
+        {
+            if (!/\s*peshToolsHideFullPledgeMath\s*/.test(PeshTools.run.$body.className))
+            {
+                PeshTools.run.$body.className += ' peshToolsHideFullPledgeMath';
+            }
+        }
+
         PeshTools.embedded.fns.updateSendStatisticsNote();
     };
 
     // PeshTools.embedded.fns.updateUI = function ()
+
+
+    /**
+     * Обновляет информацию о балансе и статусе верфицикации курьера.
+     * 
+     * @return {Void}
+     * @since   0.4.0   2017-01-14
+     */
+    PeshTools.embedded.fns.updateCourierBalance = function ()
+    {
+        // Поиск источников, если они не заданы.
+        if (!PeshTools.run.$courierBalanceNode || !PeshTools.run.$courierVerifiedNode)
+        {
+            var searchCourierBalance = true;
+            var searchCourierVerified = true;
+
+            var aElements = document.getElementsByTagName('a');
+
+            for (var i in aElements)
+            {
+                if (!searchCourierBalance && !searchCourierVerified)
+                {
+                    break;
+                }
+
+                var a = aElements[i];
+
+                if ('undefined' === typeof a.href)
+                {
+                    continue;
+                }
+
+                // http://peshkariki.ru/user/profile.html a.parentNode.title
+                // Верифицированный курьер
+                if (searchCourierVerified && 'http://peshkariki.ru/user/profile.html' === a.href)
+                {
+                    if ('Верифицированный курьер' === a.parentNode.title)
+                    {
+                        searchCourierVerified = false;
+
+                        PeshTools.run.$courierVerifiedNode = a.parentNode;
+                    }
+
+                    continue;
+                }
+
+                // http://peshkariki.ru/user/balance.html a.title
+                // Ваш баланс: 0 руб.
+                if (searchCourierBalance && 'http://peshkariki.ru/user/balance.html' === a.href)
+                {
+                    if (/Ваш баланс: (-?\d+) руб\./.test(a.title))
+                    {
+                        searchCourierBalance = false;
+
+                        PeshTools.run.$courierBalanceNode = a;
+                    }
+
+
+                    continue;
+                }
+            }
+        }
+
+        // Запоминаем прошлое значение полного баланса курьера.
+        var oldCourierBalanceFull = PeshTools.run.courierBalanceFull;
+
+        // Проверка статуса верификации курьера.
+        if (null !== PeshTools.run.$courierVerifiedNode)
+        {
+            PeshTools.run.courierVerified = 'Верифицированный курьер' === PeshTools.run.$courierVerifiedNode.title;
+        }
+
+        // Извлечение информации о текущем балансе курьера.
+        var m = /Ваш баланс: (-?\d+) руб\./.exec(PeshTools.run.$courierBalanceNode.title);
+
+        if (m)
+        {
+            PeshTools.run.courierBalance = Number.parseInt(m[1]);
+        } else
+        {
+            throw 'Unable to update courier info';
+        }
+
+        // Вычисление полного баланса курьера.
+        PeshTools.run.courierBalanceFull = PeshTools.run.courierBalance;
+        if (PeshTools.run.courierVerified)
+        {
+            PeshTools.run.courierBalanceFull += 5000;
+        }
+
+        // Если значение полного баланса изменилось...
+        if (oldCourierBalanceFull !== PeshTools.run.courierBalanceFull)
+        {
+            for (var orderId in PeshTools.run.orders)
+            {
+                // Обновляем информацию о выходном балансе заказа.
+                PeshTools.run.orders[orderId].updateClosingBalance();
+            }
+        }
+    };
+
+    // PeshTools.embedded.fns.updateCourierBalance = function ()
 
 
     /**
@@ -802,6 +916,20 @@
          * @type {Null|HTMLElement}
          */
         this.$cd = null;
+
+        /**
+         * Ссылка на HTML-элемент STRONG прогноза исходящего баланса.
+         *
+         * @type {Null|HTMLElement}
+         */
+        this.$closingBalance = null;
+
+        /**
+         * Ссылка на HTML-элемент SPAN прогноза реального исходящего баланса.
+         *
+         * @type {Null|HTMLElement}
+         */
+        this.$realClosingBalance = null;
 
         /**
          * Объявленный заработок курьера.
@@ -1046,6 +1174,29 @@
          * @type {String}
          */
         this.lowerText = '';
+
+
+        /**
+         * Обновляет прогнозы по исходящим балансам.
+         * 
+         * @return {Void}
+         * @since   0.4.0   2017-01-14
+         */
+        this.updateClosingBalance = function ()
+        {
+            var closingBalance = PeshTools.run.courierBalanceFull - this.fullPledge;
+            var realClosingBalance = PeshTools.run.courierBalance - this.fullPledge;
+
+            this.$closingBalance.innerHTML = closingBalance;
+            this.$closingBalance.className = 'peshToolsClosingBalance' +
+                    (0 < closingBalance ? 'Posi' : 'Nega') + 'tive';
+
+            this.$realClosingBalance.innerHTML = realClosingBalance;
+            this.$realClosingBalance.className = 'peshToolsClosingBalance' +
+                    (0 < realClosingBalance ? 'Posi' : 'Nega') + 'tive';
+        };
+
+        // this.updateClosingBalance = function ()
 
 
         /*************************
@@ -1364,6 +1515,39 @@
         commissionSup.innerText = '{ ' + Math.round(this.commissionRate, 4) + '% }';
         commissionBlock.innerHTML = commissionBlock.innerHTML.replace(/(Комиссия.+?руб.)/, '$1' + commissionSup.outerHTML);
 
+        // Математика залога. Заготовка.
+        var fullPledgeMathSrc = document.createElement('span');
+        fullPledgeMathSrc.id = 'peshToolsExtra' + this.id + 'FullPledgeMath';
+        fullPledgeMathSrc.className = 'peshToolsExtraFullPledgeMath';
+        commissionBlock.innerHTML = commissionBlock.innerHTML.replace(/(Комиссия.+?руб\..+?<\/sup>)/, '$1' + fullPledgeMathSrc.outerHTML);
+        var fullPledgeMath = document.getElementById(fullPledgeMathSrc.id);
+
+        // Математика залога. Полный залог.
+        var fullPledgeSpan = document.createElement('span');
+        fullPledgeSpan.id = 'peshToolsExtra' + this.id + 'FullPledge';
+        fullPledgeSpan.className = 'peshToolsPledge';
+        fullPledgeSpan.title = 'Сумма залога и комиссии';
+        fullPledgeSpan.innerText = 'Σ=' + this.fullPledge + ', ';
+
+        // Математика залога. Выходные балансы.
+        var closingBalanceStrong = document.createElement('strong');
+        closingBalanceStrong.id = 'peshToolsExtra' + this.id + 'ClosingBalance';
+        closingBalanceStrong.className = 'peshToolsClosingBalance';
+        closingBalanceStrong.title = 'Прогноз выходного баланса (с учетом статуса верификации курьера).';
+        this.$closingBalance = closingBalanceStrong;
+
+        var realClosingBalanceSpan = document.createElement('span');
+        realClosingBalanceSpan.id = 'peshToolsExtra' + this.id + 'RealClosingBalance';
+        realClosingBalanceSpan.className = 'peshToolsRealClosingBalance';
+        realClosingBalanceSpan.title = 'Прогноз выходного баланса (того самого, что на вкладке написан)';
+        this.$realClosingBalance = realClosingBalanceSpan;
+
+        fullPledgeSpan.appendChild(closingBalanceStrong);
+        fullPledgeSpan.appendChild(realClosingBalanceSpan);
+        fullPledgeMath.appendChild(fullPledgeSpan);
+
+        this.updateClosingBalance();
+
         if (!this.propHooking)
         {
             // Для не "Аренды курьера" - реальный заработок и реальный заработок на адрес доставки.
@@ -1496,6 +1680,9 @@
         PeshTools.run.$body.appendChild(panel);
 
         PeshTools.embedded.fns.bootstrapUIFilters();
+
+        PeshTools.embedded.fns.updateUI();
+        PeshTools.embedded.fns.updateCourierBalance();
     };
 
     // PeshTools.embedded.fns.bootstrapUIModeEmbedded = function ()
@@ -1868,6 +2055,37 @@
 
         PeshTools.run.skel.stats['maxFullPledge'] = 0;
 
+        // display math
+        var dl = document.createElement('dl');
+        var dt = document.createElement('dt');
+        dt.innerHTML = 'Вывод прогноза';
+
+        dl.appendChild(dt);
+
+        var dd = document.createElement('dd');
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'fullPledgeMathDisplay';
+        input.name = input.id;
+        input.value = 1;
+        input.addEventListener('change', PeshTools.embedded.fns.onPledgeChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        if (PeshTools.run.filters[input.id])
+        {
+            input.checked = true;
+        }
+
+        var label = document.createElement('label');
+        label.htmlFor = input.id;
+
+        dd.appendChild(input);
+        dd.appendChild(label);
+        dl.appendChild(dd);
+
+        elements.push(dl);
+
         // apply
         var dl = document.createElement('dl');
         var dt = document.createElement('dt');
@@ -2009,6 +2227,9 @@
             PeshTools.run.$.maxFullPledge.disabled = !this.checked;
 //            PeshTools.run.$.maxFullPledgeRecharge.disabled = !this.checked;
 //            PeshTools.run.$.maxFullPledgeCommission.disabled = !this.checked;
+            value = !!this.checked;
+        } else if ('fullPledgeMathDisplay' === this.id)
+        {
             value = !!this.checked;
         } else
         {
@@ -3083,59 +3304,6 @@
         PeshTools.run.$courierBalanceNode = null;
         PeshTools.run.courierVerified = false;
         PeshTools.run.$courierVerifiedNode = null;
-
-        var searchCourierBalance = true;
-        var searchCourierVerified = true;
-
-        var aElements = document.getElementsByTagName('a');
-
-        for (var i in aElements)
-        {
-            var a = aElements[i];
-
-            if ('undefined' === typeof a.href)
-            {
-                continue;
-            }
-
-            // http://peshkariki.ru/user/profile.html a.parentNode.title
-            // Верифицированный курьер
-            if (searchCourierVerified && 'http://peshkariki.ru/user/profile.html' === a.href)
-            {
-                if ('Верифицированный курьер' === a.parentNode.title)
-                {
-                    searchCourierVerified = false;
-
-                    PeshTools.run.$courierVerifiedNode = a.parentNode;
-                    PeshTools.run.courierVerified = true;
-                }
-
-                continue;
-            }
-
-            // http://peshkariki.ru/user/balance.html a.title
-            // Ваш баланс: 0 руб.
-            if (searchCourierBalance && 'http://peshkariki.ru/user/balance.html' === a.href)
-            {
-                var m = /Ваш баланс: (\d+) руб\./.exec(a.title);
-
-                if (m)
-                {
-                    searchCourierBalance = false;
-
-                    PeshTools.run.$courierBalanceNode = a;
-                    PeshTools.run.courierBalance = Number.parseInt(m[1]);
-                }
-
-                continue;
-            }
-        }
-
-        PeshTools.run.courierBalanceFull = PeshTools.run.courierBalance;
-        if (PeshTools.run.courierVerified)
-        {
-            PeshTools.run.courierBalanceFull += 5000;
-        }
 
         PeshToolsDbg && console.info('PeshTools.run :', PeshTools.run);
 
