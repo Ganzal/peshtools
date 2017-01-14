@@ -2970,7 +2970,7 @@
      */
     PeshTools.embedded.fns.onBadgeBlinkingOptionChange = function ()
     {
-        console.log(this);
+        PeshToolsDbg && console.log(this);
 
         var option = this.name;
         var value = this.value;
