@@ -16,7 +16,7 @@
  * 
  * @since   0.1.0   2016-12-16
  * @version 0.4.0   2017-01-14
- * @date    2017-01-14
+ * @date    2017-01-15
  * 
  * @returns {Void}
  */
@@ -1936,6 +1936,8 @@
         PeshTools.run.$body.appendChild(panel);
 
         PeshTools.embedded.fns.bootstrapUIFilters();
+        
+        PeshTools.embedded.fns.updateCourierBalance = function () {};
     };
 
     // PeshTools.embedded.fns.bootstrapUIModeOptions = function ()
