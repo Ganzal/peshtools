@@ -15,7 +15,7 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.4.0   2017-01-14
+ * @version 0.4.0   2017-01-15
  * @date    2017-01-15
  * 
  * @returns {Void}
@@ -61,6 +61,11 @@
      */
     PeshTools.embedded.fns.fetchRunDataResponseCallback = function (response)
     {
+        if (PeshTools.embedded.fns.detectBrokenPage())
+        {
+            return;
+        }
+
         PeshToolsDbg && console.info('@ PeshTools.embedded.fns.fetchRunDataResponseCallback', response);
 
         PeshTools.run.config = response.config;
@@ -91,7 +96,11 @@
         }
 
         PeshTools.embedded.fns.updateUI();
-        PeshTools.embedded.fns.updateCourierBalance();
+
+        if (!PeshTools.run.isOptionsPage())
+        {
+            PeshTools.embedded.fns.updateCourierBalance();
+        }
 
         if (response.forceUpdate || response.config.selfAutoupdate)
         {
@@ -452,11 +461,14 @@
             PeshTools.run.$[c + '_cnt'].innerHTML = PeshTools.run.stats[c];
         }
 
-        PeshTools.embedded.fns.sendMessageWrapper({
-            method: 'stats.push',
-            interaction: interaction,
-            data: PeshTools.run.stats
-        });
+        if (!PeshTools.run.isOptionsPage())
+        {
+            PeshTools.embedded.fns.sendMessageWrapper({
+                method: 'stats.push',
+                interaction: interaction,
+                data: PeshTools.run.stats
+            });
+        }
 
         // Сброс счетчика следующего обновления.
         window.setTimeout(function ()
@@ -595,6 +607,17 @@
      */
     PeshTools.embedded.fns.updateUI = function ()
     {
+        PeshTools.embedded.fns.updateUIFilters();
+        PeshTools.embedded.fns.updateUIStrings();
+        PeshTools.embedded.fns.updateUIConfig();
+
+        PeshTools.embedded.fns.updateSendStatisticsNote();
+
+        if (PeshTools.run.isOptionsPage())
+        {
+            return;
+        }
+
         if (PeshTools.run.config.showCommissionRate)
         {
             PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/\s*peshToolsHideCommissionRate\s*/, '');
@@ -628,11 +651,6 @@
             }
         }
 
-        PeshTools.embedded.fns.updateUIFilters();
-        PeshTools.embedded.fns.updateUIStrings();
-        PeshTools.embedded.fns.updateUIConfig();
-
-        PeshTools.embedded.fns.updateSendStatisticsNote();
     };
 
     // PeshTools.embedded.fns.updateUI = function ()
@@ -1936,8 +1954,7 @@
         PeshTools.run.$body.appendChild(panel);
 
         PeshTools.embedded.fns.bootstrapUIFilters();
-        
-        PeshTools.embedded.fns.updateCourierBalance = function () {};
+
     };
 
     // PeshTools.embedded.fns.bootstrapUIModeOptions = function ()
@@ -2068,7 +2085,7 @@
         return elements;
     };
 
-    // PeshTools.embedded.fns.bootstrapUIFilters = function ()
+    // PeshTools.embedded.fns.bootstrapUIFiltersDrawQuadState = function ()
 
 
     /**
@@ -2387,6 +2404,8 @@
 
         return elements;
     };
+
+    // PeshTools.embedded.fns.bootstrapUIFiltersDrawPledge = function (g, grp)
 
 
     /**
@@ -3468,7 +3487,7 @@
         PeshTools.run.stringsSelectionToken = token;
 
         window.setTimeout(function () {
-            if (PeshTools.run.stringsSelectionToken != token)
+            if (PeshTools.run.stringsSelectionToken !== token)
             {
                 return;
             }
@@ -3481,6 +3500,34 @@
     };
 
     // PeshTools.embedded.fns.onSelectionChange = function ()
+
+
+    /**
+     * Перезагружает страницу, если она поломалась.
+     * 
+     * @return {Boolean}
+     * @since   0.4.0   2017-01-15
+     */
+    PeshTools.embedded.fns.detectBrokenPage = function ()
+    {
+        if (10 < document.body.getElementsByTagName("*").length)
+        {
+            return false;
+        }
+
+        PeshTools.embedded.fns.sendMessageWrapper({
+            method: 'ga.pageview',
+            page: '/embedded#reload',
+            referrer: document.referrer,
+            title: document.title
+        });
+
+        document.location.reload(true);
+
+        return true;
+    };
+
+    // PeshTools.embedded.fns.detectBrokenPage = function ()
 
 
     /**
@@ -3563,10 +3610,19 @@
             PeshTools.run.$head.appendChild(embedded_css);
         }
 
+        var is_options_page = (document.location.href === PeshToolsENV.extension.getURL('/html/peshtools.options.html'));
+        PeshTools.run.isOptionsPage = (function () {
+            return function () {
+                return is_options_page;
+            };
+        })();
+
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'skel.fetch'
         }, PeshTools.embedded.fns.bootstrapSkelProcessor);
     };
+
+    // PeshTools.embedded.fns.bootstrap = function ()
 
 
     /**
@@ -3592,7 +3648,7 @@
         PeshToolsDbg = response.config.selfDebug;
         PeshTools.run.selfAutoupdate = response.config.selfAutoupdate;
 
-        if (document.location.href === PeshToolsENV.extension.getURL('/html/peshtools.options.html'))
+        if (PeshTools.run.isOptionsPage())
         {
             PeshTools.embedded.fns.bootstrapUIModeOptions();
         } else
