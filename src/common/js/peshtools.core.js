@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.4.0   2017-01-14
- * @date    2017-01-14
+ * @version 0.5.0   2017-01-19
+ * @date    2017-01-19
  * 
  * @returns {Void}
  */
@@ -867,6 +867,7 @@
             "maxWeight": 7.0,
             "minRealEarningApply": false,
             "minRealEarning": 180,
+            "propPersonal": "Bypass",
             "propAutocomplete": "Bypass",
             "propRecharge": "Bypass",
             "propBuyout": "Bypass",
@@ -909,6 +910,7 @@
                     "title": "Свойства",
                     "type": "QuadState",
                     "data": {
+                        "propPersonal": "Персональный",
                         "propAutocomplete": "Ракета",
                         "propAirport": "Аэропорт",
                         "propHooking": "Аренда",

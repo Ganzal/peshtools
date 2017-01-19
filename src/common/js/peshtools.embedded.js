@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-15
- * @date    2017-01-15
+ * @version 0.5.0   2017-01-19
+ * @date    2017-01-19
  * 
  * @returns {Void}
  */
@@ -238,7 +238,7 @@
         haveRequired |= haveRequiredStrings;
 
         PeshToolsDbg && console.info('haveRequired', haveRequired);
-        
+
         // Применение фильтров к заказам.
         for (var orderId in PeshTools.run.orders)
         {
@@ -289,7 +289,7 @@
                     showOrder = false;
                 }
             }
-            
+
 
             // Применение фильтра по строкам.
             for (var string in PeshTools.run.strings)
@@ -298,7 +298,7 @@
                 {
                     continue;
                 }
-                
+
                 if (-1 !== order.lowerText.indexOf(string))
                 {
                     PeshTools.run.stats['string' + string]++;
@@ -333,7 +333,7 @@
                     showOrder = false;
                 }
             }
-            
+
 
             // Применение фильтра минимального реального заработка.
             if (order.realEarning >= PeshTools.run.filters.minRealEarning)
@@ -1355,6 +1355,13 @@
         this.maxDistance = 0.0;
 
         /**
+         * Персональный заказ.
+         * 
+         * @type {Boolean}
+         */
+        this.propPersonal = false;
+
+        /**
          * Вес груза в кг.
          *
          * @type {Number}
@@ -1465,6 +1472,15 @@
             var currentTr = orderBody.childNodes[i];
             var currentField = currentTr.getElementsByTagName('td')[0];
             var currentValue = currentTr.getElementsByTagName('td')[1];
+
+            // Поиск признака персонального заказа.
+            if (/персональный заказ/.test(currentField.innerText))
+            {
+                this.propPersonal = true;
+
+                continue;
+            }
+
 
             // Разбор точки забора груза.
             if ('Откуда забрать:' === currentField.innerText)
@@ -1635,7 +1651,7 @@
                 {
                     this.propBuyout = true;
                 }
-                
+
                 this.lowerText += currentValue.innerText.toLowerCase() + "\n";
 
                 continue;
@@ -1659,7 +1675,7 @@
                 {
                     this.weight = Number.parseFloat((weightData[1] / 1000).toFixed(3));
                 }
-                
+
                 var rocket = currentValue.getElementsByClassName('fs1')[0];
                 if (rocket && "Заказ автоматически завершится при введении кода, который знает получатель" === rocket.title)
                 {
