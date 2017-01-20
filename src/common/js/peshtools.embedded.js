@@ -2119,7 +2119,7 @@
     {
         PeshToolsDbg && console.log(this);
 
-        var m = /^(.+)(Require|Highlight|Bypass|Exclude)$/.exec(this.id);
+        var m = /^(.+)(Require|Include|Bypass|Exclude)$/.exec(this.id);
 
         var filter = m[1];
         var value = m[2];
@@ -2779,7 +2779,7 @@
             return;
         }
 
-        var m = /^string(.+)(Require|Highlight|Bypass|Exclude)$/.exec(this.id);
+        var m = /^string(.+)(Require|Include|Bypass|Exclude)$/.exec(this.id);
 
         var string = m[1];
         var value = this.value;
