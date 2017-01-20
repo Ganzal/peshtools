@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-19
- * @date    2017-01-19
+ * @version 0.5.0   2017-01-20
+ * @date    2017-01-20
  * 
  * @returns {Void}
  */
@@ -429,18 +429,12 @@
             // Решение о видимости заказа в списке.
             if (hideOrder || (haveRequired && !showOrder))
             {
-                if (!/peshToolsHide/.test(order.$table.className))
-                {
-                    PeshTools.embedded.fns.orderHide(order.$table);
-                }
+                order.hide();
             } else
             {
                 PeshTools.run.stats.ordersVisible++;
-
-                if (/peshToolsHide/.test(order.$table.className))
-                {
-                    PeshTools.embedded.fns.orderShow(order.$table);
-                }
+            
+                order.show();
             }
         }
 
@@ -481,20 +475,6 @@
 
 
     /**
-     * Показывает заказ в списке.
-     *
-     * @param {HTMLElement} orderTable
-     * @return {Void}
-     */
-    PeshTools.embedded.fns.orderShow = function (orderTable)
-    {
-        orderTable.className = orderTable.className.replace(/\s*peshToolsHide\s*/, '');
-    };
-
-    // PeshTools.embedded.fns.orderShow = function (orderTable)
-
-
-    /**
      * Показывает заказ в списке (по идентификатору заказа).
      *
      * @param {Number} orderId
@@ -502,28 +482,13 @@
      */
     PeshTools.embedded.fns.orderShowById = function (orderId)
     {
-        if ('undefined' !== PeshTools.run.orders[orderId])
+        if ('undefined' !== typeof PeshTools.run.orders[orderId])
         {
-            var orderTable = PeshTools.run.orders[orderId].$table;
-            PeshTools.embedded.fns.orderShow(orderTable);
+            PeshTools.run.orders[orderId].show();
         }
     };
 
     // PeshTools.embedded.fns.orderShowById = function (orderId)
-
-
-    /**
-     * Скрывает заказ из списка.
-     *
-     * @param {HTMLElement} orderTable
-     * @return {Void}
-     */
-    PeshTools.embedded.fns.orderHide = function (orderTable)
-    {
-        orderTable.className += ' peshToolsHide';
-    };
-
-    // PeshTools.embedded.fns.orderHide = function (orderTable)
 
 
     /**
@@ -534,10 +499,9 @@
      */
     PeshTools.embedded.fns.orderHideById = function (orderId)
     {
-        if ('undefined' !== PeshTools.run.orders[orderId])
+        if ('undefined' !== typeof PeshTools.run.orders[orderId])
         {
-            var orderTable = PeshTools.run.orders[orderId].$table;
-            PeshTools.embedded.fns.orderHide(orderTable);
+            PeshTools.run.orders[orderId].hide();
         }
     };
 
@@ -1374,6 +1338,40 @@
          * @type {String}
          */
         this.lowerText = '';
+
+
+        /**
+         * Скрывает заказ из списка.
+         * 
+         * @since   0.5.0   2017-01-20
+         * Перенесен из метода <code>PeshTools.embedded.fns.orderHide()</code>.
+         */
+        this.hide = function ()
+        {
+            if (!/peshToolsHide/.test(this.$table.className))
+            {
+                this.$table.className += ' peshToolsHide';
+            }
+        };
+
+        // this.hide = function ()
+
+
+        /**
+         * Показывает заказ в списке.
+         * 
+         * @since   0.5.0   2017-01-20
+         * Перенесен из метода <code>PeshTools.embedded.fns.orderShow()</code>.
+         */
+        this.show = function ()
+        {
+            if (/peshToolsHide/.test(this.$table.className))
+            {
+                this.$table.className = this.$table.className.replace(/\s*peshToolsHide\s*/, '');
+            }
+        };
+
+        // this.show = function ()
 
 
         /**
