@@ -1582,6 +1582,8 @@
                 this.catchTomorrow = (this.catchYmd === PeshTools.run.tomorrowYmd);
                 this.catchOther = !(this.catchToday || this.catchTomorrow);
 
+                this.lowerText += currentValue.innerText.toLowerCase() + "\n";
+
                 var catchDistanceMatch = /^м\..*?(\d+\.\d)\s+км,/.exec(currentValue.innerText);
 
                 if (!catchDistanceMatch)
@@ -1601,8 +1603,6 @@
                     this.$cd = cdb.parentNode;
                     this.$cd.className += ' peshToolsCountDown';
                 }
-
-                this.lowerText += currentValue.innerText.toLowerCase() + "\n";
 
                 continue;
             }
