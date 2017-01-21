@@ -16,7 +16,7 @@
  * 
  * @since   0.1.0   2016-12-16
  * @version 0.5.0   2017-01-20
- * @date    2017-01-20
+ * @date    2017-01-21
  * 
  * @returns {Void}
  */
@@ -204,14 +204,16 @@
 
         // Поиск обязательных фильтров.
         var haveRequired = false;
+        var haveIncludes = false;
 
         for (var f in PeshTools.run.QuadStateFilters)
         {
             var filter = PeshTools.run.QuadStateFilters[f];
 
             haveRequired |= ('Require' === PeshTools.run.filters[filter]);
+            haveIncludes |= ('Include' === PeshTools.run.filters[filter]);
 
-            PeshToolsDbg && console.log(filter, PeshTools.run.filters[filter], haveRequired);
+            PeshToolsDbg && console.log(filter, PeshTools.run.filters[filter], haveRequired, haveIncludes);
         }
 
         haveRequired |= PeshTools.run.filters.minRealEarningApply;
@@ -224,6 +226,7 @@
         PeshToolsDbg && console.log('maxDistanceApply', PeshTools.run.filters.maxDistanceApply, haveRequired);
 
         var haveRequiredStrings = false;
+        var haveIncludesStrings = false;
         for (var string in PeshTools.run.strings)
         {
             if (!PeshTools.run.strings.hasOwnProperty(string))
@@ -232,12 +235,15 @@
             }
 
             haveRequiredStrings |= ('Require' === PeshTools.run.strings[string]);
+            haveIncludesStrings |= ('Include' === PeshTools.run.strings[string]);
         }
 
         haveRequiredStrings &= PeshTools.run.filters.execStrings;
         haveRequired |= haveRequiredStrings;
+        haveIncludes |= haveIncludesStrings;
 
         PeshToolsDbg && console.info('haveRequired', haveRequired);
+        PeshToolsDbg && console.info('haveIncludes', haveIncludes);
 
         // Применение фильтров к заказам.
         for (var orderId in PeshTools.run.orders)
@@ -251,11 +257,9 @@
 
             /** @var order PeshTools.embedded.classes.order */
             var order = PeshTools.run.orders[orderId];
+            order.resetWichArrays();
 
             PeshToolsDbg && console.groupCollapsed(order.id);
-
-            var showOrder = true;
-            var hideOrder = false;
 
             // Применение четырехзначных фильтров.
             for (var f in PeshTools.run.QuadStateFilters)
@@ -273,20 +277,23 @@
                     {
                         PeshToolsDbg && console.info('Require by', filter);
 
-                        showOrder &= true;
+                        order.whichRequire.push(filter);
+                    } else if ('Include' === PeshTools.run.filters[filter])
+                    {
+                        PeshToolsDbg && console.info('Include by', filter);
+
+                        order.whichInclude.push(filter);
                     } else if ('Exclude' === PeshTools.run.filters[filter])
                     {
                         PeshToolsDbg && console.info('Exclude by', filter);
 
-                        hideOrder = true;
-                        showOrder = false;
+                        order.whichExclude.push(filter);
                     }
                 } else if ('Require' === PeshTools.run.filters[filter])
                 {
                     PeshToolsDbg && console.info('Exclude by required', filter);
 
-                    hideOrder = true;
-                    showOrder = false;
+                    order.whichExclude.push(filter);
                 }
             }
 
@@ -301,7 +308,8 @@
 
                 if (-1 !== order.lowerText.indexOf(string))
                 {
-                    PeshTools.run.stats['string' + string]++;
+                    var filter = 'string' + string;
+                    PeshTools.run.stats[filter]++;
 
                     if (!PeshTools.run.filters.execStrings)
                     {
@@ -312,13 +320,17 @@
                     {
                         PeshToolsDbg && console.info('Require by', string);
 
-                        showOrder &= true;
+                        order.whichRequire.push(filter);
+                    } else if ('Include' === PeshTools.run.strings[string])
+                    {
+                        PeshToolsDbg && console.info('Include by', string);
+
+                        order.whichInclude.push(filter);
                     } else if ('Exclude' === PeshTools.run.strings[string])
                     {
                         PeshToolsDbg && console.info('Exclude by', string);
 
-                        hideOrder = true;
-                        showOrder = false;
+                        order.whichExclude.push(filter);
                     }
                 } else if ('Require' === PeshTools.run.strings[string])
                 {
@@ -329,8 +341,7 @@
 
                     PeshToolsDbg && console.info('Exclude by required', string);
 
-                    hideOrder = true;
-                    showOrder = false;
+                    order.whichExclude.push(filter);
                 }
             }
 
@@ -343,7 +354,8 @@
                 if (PeshTools.run.filters.minRealEarningApply)
                 {
                     PeshToolsDbg && console.info('Require by minRealEarning');
-                    showOrder &= true;
+
+                    order.whichRequire.push(filter);
                 }
             } else
             {
@@ -351,8 +363,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by minRealEarning');
 
-                    hideOrder = true;
-                    showOrder = false;
+                    order.whichExclude.push(filter);
                 }
             }
 
@@ -363,7 +374,8 @@
                 if (PeshTools.run.filters.maxFullPledgeApply)
                 {
                     PeshToolsDbg && console.info('Require by maxFullPledge');
-                    showOrder &= true;
+
+                    order.whichRequire.push(filter);
                 }
             } else
             {
@@ -373,8 +385,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by maxFullPledge');
 
-                    hideOrder = true;
-                    showOrder = false;
+                    order.whichExclude.push(filter);
                 }
             }
 
@@ -385,7 +396,8 @@
                 if (PeshTools.run.filters.maxDistanceApply)
                 {
                     PeshToolsDbg && console.info('Require by maxDistance');
-                    showOrder &= true;
+
+                    order.whichRequire.push(filter);
                 }
             } else
             {
@@ -395,8 +407,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by maxDistance');
 
-                    hideOrder = true;
-                    showOrder = false;
+                    order.whichExclude.push(filter);
                 }
             }
 
@@ -407,7 +418,8 @@
                 if (PeshTools.run.filters.maxWeightApply)
                 {
                     PeshToolsDbg && console.info('Require by maxWeight');
-                    showOrder &= true;
+
+                    order.whichRequire.push(filter);
                 }
             } else
             {
@@ -417,25 +429,45 @@
                 {
                     PeshToolsDbg && console.info('Exclude by maxWeight');
 
-                    hideOrder = true;
-                    showOrder = false;
+                    order.whichExclude.push(filter);
                 }
             }
 
             PeshToolsDbg && console.groupEnd(order.id);
-            PeshToolsDbg && console.log(order.id, showOrder, hideOrder, haveRequired);
-            PeshToolsDbg && console.info(order.id, 'hide?', hideOrder || (haveRequired && !showOrder));
+            PeshToolsDbg && console.log(order.id, haveRequired, order.whichRequire.length);
+            PeshToolsDbg && console.log(order.id, haveIncludes, order.whichInclude.length);
+            PeshToolsDbg && console.log(order.id, order.whichExclude.length);
 
-            // Решение о видимости заказа в списке.
-            if (hideOrder || (haveRequired && !showOrder))
+            if (order.whichExclude.length)
             {
+                PeshToolsDbg && console.info(order.id, 'hide by whichExclude');
+
                 order.hide();
-            } else
-            {
-                PeshTools.run.stats.ordersVisible++;
-            
-                order.show();
+                continue;
             }
+
+            if (haveRequired && !order.whichRequire.length)
+            {
+                PeshToolsDbg && console.info(order.id, 'hide by haveRequired && !whichRequire');
+
+                order.hide();
+                continue;
+            }
+
+            if (haveIncludes && !order.whichInclude.length)
+            {
+                PeshToolsDbg && console.info(order.id, 'hide by haveIncludes && !whichInclude');
+
+                order.hide();
+                continue;
+            }
+
+            PeshTools.run.stats.ordersVisible++;
+
+            PeshToolsDbg && console.info(order.id, 'show');
+
+            order.show();
+            continue;
         }
 
         // for (var orderId in PeshTools.run.orders)
@@ -1338,6 +1370,43 @@
          * @type {String}
          */
         this.lowerText = '';
+
+        /**
+         * Список фильтров, явно скрывающих заказ.
+         * 
+         * @type {Array}
+         */
+        this.whichExclude = [];
+
+        /**
+         * Список фильтров, допускающих заказ к отображению. Логика "ИЛИ".
+         * 
+         * @type {Array}
+         */
+        this.whichInclude = [];
+
+        /**
+         * Список фильтров, требующих заказ к отображению. Логика "И".
+         * 
+         * @type {Array}
+         */
+        this.whichRequire = [];
+
+
+        /**
+         * Очищает списки фильтров.
+         * 
+         * @return {Void}
+         * @since   0.5.0   2017-01-20
+         */
+        this.resetWichArrays = function ()
+        {
+            this.whichExclude = [];
+            this.whichInclude = [];
+            this.whichRequire = [];
+        };
+
+        // this.resetWichArrays = function ()
 
 
         /**
