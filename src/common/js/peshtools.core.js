@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-19
- * @date    2017-01-19
+ * @version 0.5.0   2017-01-21
+ * @date    2017-01-21
  * 
  * @returns {Void}
  */
@@ -877,6 +877,7 @@
             "propFragile": "Bypass",
             "propOversized": "Bypass",
             "propWaiting": "Bypass",
+            "propPostOffice": "Bypass",
             "propPhotoOfShipment": "Bypass",
             "propPhotoOfCertificate": "Bypass",
             "propPhotoOfCheck": "Bypass"
@@ -920,6 +921,7 @@
                         "propFragile": "Хрупкий",
                         "propWagon": "Автомобиль",
                         "propWaiting": "Ожидание",
+                        "propPostOffice": "Отправка почтой",
                         "propPhotoOfShipment": "Фото товара",
                         "propPhotoOfCheck": "Фото чека",
                         "propPhotoOfCertificate": "Фото акта"

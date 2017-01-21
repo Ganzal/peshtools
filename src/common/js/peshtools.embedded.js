@@ -15,7 +15,7 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-20
+ * @version 0.5.0   2017-01-21
  * @date    2017-01-21
  * 
  * @returns {Void}
@@ -1335,6 +1335,13 @@
          * @type {Boolean}
          */
         this.propPhotoOfShipment = false;
+        
+        /**
+         * Отправка почтой России.
+         * 
+         * @type {Boolean}
+         */
+        this.propPostOffice = false;
 
         /**
          * Минимальная дистанция от метро до точки забора/доставки.
@@ -1717,6 +1724,11 @@
                 if (/Требуется выкуп товара/.test(currentValue.innerText))
                 {
                     this.propBuyout = true;
+                }
+
+                if (/Отправка почтой России/.test(currentValue.innerText))
+                {
+                    this.propPostOffice = true;
                 }
 
                 this.lowerText += currentValue.innerText.toLowerCase() + "\n";
