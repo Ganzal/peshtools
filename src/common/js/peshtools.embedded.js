@@ -845,16 +845,22 @@
     PeshTools.embedded.fns.updateCourierBalance = function ()
     {
         // Поиск источников, если они не заданы.
-        if (!PeshTools.run.$courierBalanceNode || !PeshTools.run.$courierVerifiedNode)
+        var searchNodes = false;
+        searchNodes |= !PeshTools.run.$courierBalanceNode;
+        searchNodes |= !PeshTools.run.$courierVerifiedNode;
+        searchNodes |= !PeshTools.run.$totalPledgeNode;
+
+        if (searchNodes)
         {
             var searchCourierBalance = true;
             var searchCourierVerified = true;
+            var searchTotalPledge = true;
 
             var aElements = document.getElementsByTagName('a');
 
             for (var i in aElements)
             {
-                if (!searchCourierBalance && !searchCourierVerified)
+                if (!searchCourierBalance && !searchCourierVerified && !searchTotalPledge)
                 {
                     break;
                 }
@@ -894,6 +900,21 @@
 
                     continue;
                 }
+
+                // http://peshkariki.ru/user/freezebalance.html a.href
+                // Залог: 0р
+                if (searchTotalPledge && 'http://peshkariki.ru/user/freezebalance.html' === a.href)
+                {
+                    if (/Залог: \d+р/.test(a.innerText))
+                    {
+                        searchTotalPledge = false;
+
+                        PeshTools.run.$totalPledgeNode = a;
+                    }
+
+                    continue;
+                }
+
             }
         }
 
@@ -912,9 +933,41 @@
         if (m)
         {
             PeshTools.run.courierBalance = Number.parseInt(m[1]);
+            PeshTools.run.$panelBalanceVisible.innerHTML = PeshTools.run.courierBalance;
+
+            if (0 > PeshTools.run.courierBalance)
+            {
+                PeshTools.run.$panelBalanceVisible.className = 'peshToolsClosingBalanceNegative';
+            } else
+            {
+                PeshTools.run.$panelBalanceVisible.className = 'peshToolsClosingBalancePositive';
+            }
         } else
         {
             throw 'Unable to update courier info';
+        }
+
+        // Извлечение суммы залогов.
+        var m = /Залог: (\d+)р/.exec(PeshTools.run.$totalPledgeNode.innerText);
+        if (m)
+        {
+            PeshTools.run.totalPledge = Number.parseInt(m[1]);
+            PeshTools.run.$panelBalancePledge.innerHTML = PeshTools.run.totalPledge;
+        } else
+        {
+            throw 'Unable to update pledge info';
+        }
+
+        // Вычисление собственных средств курьера.
+        PeshTools.run.courierBalanceDeposit = PeshTools.run.courierBalance + PeshTools.run.totalPledge;
+        PeshTools.run.$panelBalanceDeposit.innerHTML = PeshTools.run.courierBalanceDeposit;
+
+        if (0 > PeshTools.run.courierBalanceDeposit)
+        {
+            PeshTools.run.$panelBalanceDeposit.className = 'peshToolsClosingBalanceNegative';
+        } else
+        {
+            PeshTools.run.$panelBalanceDeposit.className = '';
         }
 
         // Вычисление полного баланса курьера.
@@ -922,6 +975,17 @@
         if (PeshTools.run.courierVerified)
         {
             PeshTools.run.courierBalanceFull += 5000;
+            PeshTools.run.$panelBalanceVerivication.innerHTML = 5000;
+            PeshTools.run.$panelBalanceVerivication.className = 'peshToolsClosingBalancePositive';
+        }
+
+        PeshTools.run.$panelBalanceAvailable.innerHTML = PeshTools.run.courierBalanceFull;
+        if (0 > PeshTools.run.courierBalanceFull)
+        {
+            PeshTools.run.$panelBalanceAvailable.className = 'peshToolsClosingBalanceNegative';
+        } else
+        {
+            PeshTools.run.$panelBalanceAvailable.className = 'peshToolsClosingBalancePositive';
         }
 
         // Если значение полного баланса изменилось...
@@ -2023,6 +2087,8 @@
         panelStickerCountdown.innerHTML = '⌛';
         PeshTools.run.$panelStickerCountdown = panelStickerCountdown;
 
+        var panelBalance = PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawBalance();
+
         panelStickerStat.appendChild(panelStickerStatVisible);
         panelStickerStat.appendChild(panelStickerStatOverall);
         panelSticker.appendChild(panelStickerLogo);
@@ -2030,6 +2096,7 @@
         panelSticker.appendChild(panelStickerCountdown);
         panel.appendChild(panelSticker);
         panel.appendChild(panelFilters);
+        panel.appendChild(panelBalance);
         PeshTools.run.$body.appendChild(panel);
 
         PeshTools.run.$body.className += ' peshToolsFilters' + (PeshTools.run.config.filtersEnabled ? 'En' : 'Dis') + 'abled';
@@ -2044,6 +2111,107 @@
     };
 
     // PeshTools.embedded.fns.bootstrapUIModeEmbedded = function ()
+
+
+    /**
+     * Начальная загрузка. Отрисовка подробностей баланса.
+     * 
+     * @return {HTMLElement}
+     * @since   0.6.0   2017-01-22
+     */
+    PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawBalance = function ()
+    {
+        var div = document.createElement('div');
+        div.id = 'peshToolsBalance';
+
+        var table = document.createElement('table');
+
+        // Строка собственных средств.
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.innerHTML = '&nbsp;';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 'Собственные';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelBalanceDeposit = td;
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        // Строка залога.
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.innerHTML = '−';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 'Залог';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        tr.appendChild(td);
+        PeshTools.run.$panelBalancePledge = td;
+        table.appendChild(tr);
+
+        // Строка баланса.
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.innerHTML = '=';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 'Баланс';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        tr.appendChild(td);
+        PeshTools.run.$panelBalanceVisible = td;
+        table.appendChild(tr);
+
+        // Строка бонуса за верификацию.
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.innerHTML = '+';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 'Верификация';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        tr.appendChild(td);
+        PeshTools.run.$panelBalanceVerivication = td;
+        table.appendChild(tr);
+
+        // Строка доступных средств.
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.innerHTML = '=';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 'Доступно';
+        tr.appendChild(td);
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        tr.appendChild(td);
+        PeshTools.run.$panelBalanceAvailable = td;
+        table.appendChild(tr);
+
+        div.appendChild(table);
+
+        return div;
+    };
+
+    // PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawBalance = function ()
 
 
     /**
@@ -3811,6 +3979,8 @@
         PeshTools.run.$courierBalanceNode = null;
         PeshTools.run.courierVerified = false;
         PeshTools.run.$courierVerifiedNode = null;
+        PeshTools.run.totalPledge = 0;
+        PeshTools.run.$totalPledgeNode = null;
 
         PeshToolsDbg && console.info('PeshTools.run :', PeshTools.run);
 

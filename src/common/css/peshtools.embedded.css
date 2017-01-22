@@ -394,5 +394,34 @@ span[id$='RealClosingBalance']:before {
 #peshToolsOptionFilteringStyle_dl label {
   width: 35%;
 }
+#peshTools.collapsed:hover #peshToolsBalance {
+  display: block;
+  background-color: rgba(255, 255, 255, 0.98);
+  position: fixed;
+  bottom: 120px;
+  left: 10px;
+  font-size: 11px;
+  padding: 4px;
+  outline: 2px solid #18649e;
+}
+#peshTools.collapsed #peshToolsBalance,
+#peshTools.expanded #peshToolsBalance {
+  display: none;
+}
+#peshToolsBalance td {
+  padding: 2px;
+}
+#peshToolsBalance tr:nth-child(2n) td {
+  border-bottom: 1px solid black;
+}
+#peshToolsBalance td:last-child {
+  text-align: right;
+}
+#peshToolsBalance td:first-child {
+  width: 10px;
+}
+#peshToolsBalance td:nth-child(2n) {
+  width: 120px;
+}
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */
