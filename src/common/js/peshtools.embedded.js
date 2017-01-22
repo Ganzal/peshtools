@@ -1107,6 +1107,13 @@
         this.$cd = null;
 
         /**
+         * Ссылка на HTML-элемент A крестика сокрытия заказа.
+         *
+         * @type {Null|HTMLElement}
+         */
+        this.$cross = null;
+
+        /**
          * Ссылка на HTML-элемент STRONG прогноза исходящего баланса.
          *
          * @type {Null|HTMLElement}
@@ -1335,7 +1342,7 @@
          * @type {Boolean}
          */
         this.propPhotoOfShipment = false;
-        
+
         /**
          * Отправка почтой России.
          * 
@@ -1852,6 +1859,24 @@
             earningBlock.appendChild(earningDiv);
         }
 
+        // Кнопка безопасного сокрытия заказа.
+        var td = orderBody.getElementsByTagName('td')[1];
+        var div = document.createElement('div');
+        div.id = 'peshToolsExtra' + this.id + 'SafeHideWrapper';
+        div.className = 'peshToolsSafeHideWrapper';
+        var btn = document.createElement('button');
+        btn.id = 'peshToolsExtra' + this.id + 'SafeHide';
+        btn.innerHTML = 'Ⓧ';
+        btn.dataset.orderId = this.id;
+
+        btn.addEventListener('click', PeshTools.embedded.fns.safeHideOrder_hnd);
+
+        div.appendChild(btn);
+        td.appendChild(div);
+
+        this.$cross = td.getElementsByTagName('a')[0];
+
+
         // Пара отметок об успешной обработке таблицы заказа.
         this.$table.dataset.peshToolsTag = Math.random();
         this.$table.dataset.peshToolsOrderId = this.id;
@@ -1859,6 +1884,27 @@
     };
 
     // PeshTools.embedded.classes.order = function (orderTable)
+
+
+    /**
+     * Обработчик клика по кнопке безопасного сокрытия заказа.
+     * 
+     * @return {Void}
+     * @since   0.5.0   2017-01-21
+     */
+    PeshTools.embedded.fns.safeHideOrder_hnd = function ()
+    {
+        var orderId = this.dataset.orderId;
+
+        if ('undefined' === typeof PeshTools.run.orders[orderId])
+        {
+            return;
+        }
+
+        PeshTools.run.orders[orderId].$cross.click();
+    };
+
+    // PeshTools.embedded.fns.safeHideOrder_hnd = function ()
 
 
     /**

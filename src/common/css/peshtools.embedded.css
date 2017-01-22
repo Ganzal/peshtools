@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.4.0   2017-01-14
- * @date    2017-01-14
+ * @version 0.5.0   2017-01-21
+ * @date    2017-01-21
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -346,6 +346,38 @@ span[id$='RealClosingBalance']:before {
 }
 .peshToolsClosingBalanceNegative {
   color: #e01d1d;
+}
+.peshToolsSafeHideWrapper {
+  display: inline-block;
+  position: relative;
+  right: -18px;
+  width: 14px;
+  float: right;
+  line-height: 18px;
+  height: 16px;
+  overflow: hidden;
+}
+.peshToolsSafeHideWrapper button {
+  color: white;
+  font-weight: bold;
+  display: none;
+  cursor: default;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
+  text-align: center;
+  vertical-align: top;
+  padding: 0;
+  margin: 0;
+}
+.peshToolsSafeHideWrapper:hover {
+  width: 40px;
+}
+.peshToolsSafeHideWrapper:hover button {
+  display: inline-block;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */
