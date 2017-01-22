@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-21
- * @date    2017-01-21
+ * @version 0.6.0   2017-01-22
+ * @date    2017-01-22
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -64,11 +64,14 @@
 #peshToolsStickerStatVisible {
   font-size: 18px;
 }
-#peshTools.collapsed #peshToolsStickerStatVisible {
+.peshToolsFiltersEnabled #peshTools.collapsed #peshToolsStickerStatVisible {
   color: #18649e;
 }
-#peshTools.expanded #peshToolsStickerStatVisible {
+.peshToolsFiltersEnabled #peshTools.expanded #peshToolsStickerStatVisible {
   color: #1bb06c;
+}
+.peshToolsFiltersDisabled #peshTools.expanded #peshToolsStickerStatVisible {
+  color: #b0b0b0;
 }
 #peshTools.collapsed #peshToolsStickerCountdown {
   color: #18649e;
@@ -217,7 +220,7 @@
   background-color: #e01d1d;
   color: white;
 }
-.peshToolsHide {
+.peshToolsFiltersEnabled .peshToolsHide {
   display: none;
 }
 .peshToolsEarning {

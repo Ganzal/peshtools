@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-21
- * @date    2017-01-21
+ * @version 0.6.0   2017-01-22
+ * @date    2017-01-22
  * 
  * @returns {Void}
  */
@@ -612,6 +612,14 @@
         if (PeshTools.run.isOptionsPage())
         {
             return;
+        }
+
+        if (PeshTools.run.config.filtersEnabled)
+        {
+            PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/(\s*peshToolsFilters)Dis(abled\s*)/, '$1En$2');
+        } else
+        {
+            PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/(\s*peshToolsFilters)En(abled\s*)/, '$1Dis$2');
         }
 
         if (PeshTools.run.config.showCommissionRate)
@@ -2018,6 +2026,8 @@
         panel.appendChild(panelSticker);
         panel.appendChild(panelFilters);
         PeshTools.run.$body.appendChild(panel);
+
+        PeshTools.run.$body.className += ' peshToolsFilters' + (PeshTools.run.config.filtersEnabled ? 'En' : 'Dis') + 'abled';
 
         PeshTools.embedded.fns.bootstrapUIFilters();
 

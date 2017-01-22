@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-21
- * @date    2017-01-21
+ * @version 0.6.0   2017-01-22
+ * @date    2017-01-22
  * 
  * @returns {Void}
  */
@@ -839,6 +839,7 @@
      */
     PeshTools.core.skel = {
         "selfConfig": {
+            "filtersEnabled": true,
             "selfAutoupdate": true,
             "badgeBlinking": "None",
             "hidePeshCountdowns": false,
@@ -963,6 +964,7 @@
                     "title": "Опции",
                     "type": "Options",
                     "data": {
+                        "filtersEnabled": "Включить фильтрацию",
                         "selfAutoupdate": "Автообновление",
                         "badgeBlinking": "Мигание бэджа",
                         "hidePeshCountdowns": "Нет секундомерам!",
@@ -981,7 +983,7 @@
                 "title": "Требовать",
                 "label": "!"
             },
-            
+
             "Include": {
                 "title": "Включать",
                 "label": "+"

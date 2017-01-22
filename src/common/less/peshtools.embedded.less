@@ -13,8 +13,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.5.0   2017-01-21
- * @date    2017-01-21
+ * @version 0.6.0   2017-01-22
+ * @date    2017-01-22
  */
 
 @import "_variables.less";
@@ -66,12 +66,16 @@
     font-size: 18px;
 }
 
-#peshTools.collapsed #peshToolsStickerStatVisible {
+.peshToolsFiltersEnabled #peshTools.collapsed #peshToolsStickerStatVisible {
     color: @peshtools-color-basic;
 }
 
-#peshTools.expanded #peshToolsStickerStatVisible {
+.peshToolsFiltersEnabled #peshTools.expanded #peshToolsStickerStatVisible {
     color: @peshtools-color-green;
+}
+
+.peshToolsFiltersDisabled #peshTools.expanded #peshToolsStickerStatVisible {
+    color: @peshtools-color-grey;
 }
 
 #peshTools.collapsed #peshToolsStickerCountdown {
@@ -263,7 +267,7 @@
 }
 
 
-.peshToolsHide {
+.peshToolsFiltersEnabled .peshToolsHide {
     display: none;
 }
 
