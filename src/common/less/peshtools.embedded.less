@@ -267,8 +267,16 @@
 }
 
 
-.peshToolsFiltersEnabled .peshToolsHide {
+.peshToolsFiltersEnabled.peshToolsFilteringStyleHide .peshToolsHide {
     display: none;
+}
+
+.peshToolsFiltersEnabled.peshToolsFilteringStyleOpacity .peshToolsHide {
+    opacity: .3;
+}
+
+.peshToolsFiltersEnabled.peshToolsFilteringStyleOpacity .peshToolsHide:hover {
+    opacity: .65;
 }
 
 .peshToolsEarning {
@@ -468,6 +476,15 @@ span[id$='RealClosingBalance']:before {
 
 .peshToolsSafeHideWrapper:hover button {
     display: inline-block;
+}
+
+
+#peshToolsOptionFilteringStyle_dl dd {
+    width: 100%;
+}
+
+#peshToolsOptionFilteringStyle_dl label {
+    width: 35%;
 }
 
 /* eof: /css/peshtools.embedded.less */

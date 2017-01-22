@@ -840,6 +840,7 @@
     PeshTools.core.skel = {
         "selfConfig": {
             "filtersEnabled": true,
+            "filteringStyle": "Hide",
             "selfAutoupdate": true,
             "badgeBlinking": "None",
             "hidePeshCountdowns": false,
@@ -965,6 +966,7 @@
                     "type": "Options",
                     "data": {
                         "filtersEnabled": "Включить фильтрацию",
+                        "filteringStyle": "Стиль фильтрации",
                         "selfAutoupdate": "Автообновление",
                         "badgeBlinking": "Мигание бэджа",
                         "hidePeshCountdowns": "Нет секундомерам!",

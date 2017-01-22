@@ -622,6 +622,11 @@
             PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/(\s*peshToolsFilters)En(abled\s*)/, '$1Dis$2');
         }
 
+        PeshTools.run.$body.className = PeshTools.run.$body.className.replace(
+                /(\s*peshToolsFilteringStyle)Hide|Opacity(\s*)/,
+                '$1' + PeshTools.run.config.filteringStyle + '$2'
+                );
+
         if (PeshTools.run.config.showCommissionRate)
         {
             PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/\s*peshToolsHideCommissionRate\s*/, '');
@@ -2028,6 +2033,7 @@
         PeshTools.run.$body.appendChild(panel);
 
         PeshTools.run.$body.className += ' peshToolsFilters' + (PeshTools.run.config.filtersEnabled ? 'En' : 'Dis') + 'abled';
+        PeshTools.run.$body.className += ' peshToolsFilteringStyle' + PeshTools.run.config.filteringStyle;
 
         PeshTools.embedded.fns.bootstrapUIFilters();
 
@@ -3226,6 +3232,52 @@
 
             // if ('badgeBlinking' === f)
 
+            if ('filteringStyle' === f)
+            {
+                dl.id = 'peshToolsOptionFilteringStyle_dl';
+
+                input.type = 'radio';
+                input.name = f;
+                input.id = f + 'Hide';
+                input.value = 'Hide';
+                input.checked = input.value === PeshTools.run.config.filteringStyle;
+                input.addEventListener('change', PeshTools.embedded.fns.onFilteringStyleOptionChange);
+
+                PeshTools.run.$[input.id] = input;
+
+                var label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.innerHTML = 'Сокрытие';
+
+                dd.appendChild(input);
+                dd.appendChild(label);
+
+                var input = document.createElement('input');
+                input.type = 'radio';
+                input.name = f;
+                input.id = f + 'Opacity';
+                input.value = 'Opacity';
+                input.checked = input.value === PeshTools.run.config.filteringStyle;
+                input.addEventListener('change', PeshTools.embedded.fns.onFilteringStyleOptionChange);
+
+                PeshTools.run.$[input.id] = input;
+
+                var label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.innerHTML = 'Прозрачность';
+
+                dd.appendChild(input);
+                dd.appendChild(label);
+
+                dl.appendChild(dd);
+
+                elements.push(dl);
+
+                continue;
+            }
+
+            // if ('filteringStyle' === f)
+
 
             input.type = 'checkbox';
             input.name = f;
@@ -3322,6 +3374,37 @@
     };
 
     // PeshTools.embedded.fns.onOptionChange = function ()
+
+
+    /**
+     * Обработчик изменения значения опции filteringStyle приложения.
+     *
+     * @return {Void}
+     * @since   0.6.0   2017-01-22
+     */
+    PeshTools.embedded.fns.onFilteringStyleOptionChange = function ()
+    {
+        PeshToolsDbg && console.log(this);
+
+        var option = this.name;
+        var value = this.value;
+
+        PeshTools.run.config[option] = value;
+
+        PeshToolsDbg && console.warn(PeshTools.run.config);
+
+        PeshTools.embedded.fns.sendMessageWrapper({
+            method: 'config.save',
+            bank: 'config',
+            name: option,
+            value: value,
+            scheduleUpdate: true,
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.embedded.fns.onFilteringStyleOptionChange = function ()
 
 
     /**
