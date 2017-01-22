@@ -1,7 +1,7 @@
 {
   "name": "PeshTools",
-  "version": "0.5.0",
-  "version_name": "0.5-dev",
+  "version": "0.6.0",
+  "version_name": "0.6-dev",
   "description": "Полезные инструменты для сайта Peshkariki.ru",
   "main": "gulpfile.js",
   "devDependencies": {
