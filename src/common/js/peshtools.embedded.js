@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-22
- * @date    2017-01-22
+ * @version 0.6.0   2017-01-24
+ * @date    2017-01-25
  * 
  * @returns {Void}
  */
@@ -2428,10 +2428,10 @@
     {
         PeshToolsDbg && console.log(this);
 
-        var m = /^(.+)(Require|Include|Bypass|Exclude)$/.exec(this.id);
+        var m = PeshTools.run.quadStateRegex.exec(this.id);
 
-        var filter = m[1];
-        var value = m[2];
+        var filter = m[2];
+        var value = m[3];
 
         PeshTools.run.filters[filter] = value;
 
@@ -3088,9 +3088,9 @@
             return;
         }
 
-        var m = /^string(.+)(Require|Include|Bypass|Exclude)$/.exec(this.id);
+        var m = PeshTools.run.quadStateRegex.exec(this.id);
 
-        var string = m[1];
+        var string = m[2];
         var value = this.value;
 
         PeshTools.run.strings[string] = value;
@@ -4057,6 +4057,7 @@
         PeshTools.run.debug = response.config.selfDebug;
         PeshToolsDbg = response.config.selfDebug;
         PeshTools.run.selfAutoupdate = response.config.selfAutoupdate;
+        PeshTools.run.quadStateRegex = new RegExp('^(string)?(.+)(' + Object.keys(PeshTools.run.skel.filtersQuadStates).join('|') + ')$');
 
         if (PeshTools.run.isOptionsPage())
         {
