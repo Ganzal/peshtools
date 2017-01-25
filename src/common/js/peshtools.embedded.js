@@ -513,6 +513,7 @@
             }
 
             PeshTools.run.$[c + '_cnt'].innerHTML = PeshTools.run.stats[c];
+            PeshTools.run.$[c + '_cnt'].dataset.cnt = PeshTools.run.stats[c];
         }
 
         if (!PeshTools.run.isOptionsPage())

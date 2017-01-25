@@ -13,8 +13,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-22
- * @date    2017-01-22
+ * @version 0.6.0   2017-01-25
+ * @date    2017-01-25
  */
 
 @import "_variables.less";
@@ -205,6 +205,12 @@
     padding: 2px;
     margin-left: 2px;
     color: @peshtools-color-green;
+}
+
+#peshTools sub[data-cnt="0"]
+{
+    color: @peshtools-color-grey;
+    font-size: 80%;
 }
 
 #peshTools fieldset {
