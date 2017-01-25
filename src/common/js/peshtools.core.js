@@ -859,6 +859,8 @@
             "dropOther": "Bypass",
             "execStrings": false,
             "fullPledgeMathDisplay": true,
+            "maxBuyoutPriceApply": false,
+            "maxBuyoutPrice": 2500,
             "maxDistanceApply": false,
             "maxDistance": 3.3,
             "maxFullPledgeApply": false,
@@ -935,6 +937,11 @@
                 "minRealEarning": {
                     "title": "Заработок",
                     "type": 'Earning'
+                },
+
+                "maxBuyoutPrice": {
+                    "title": "Выкуп",
+                    "type": 'Buyout'
                 },
 
                 "maxFullPledge": {

@@ -15,7 +15,7 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-24
+ * @version 0.6.0   2017-01-25
  * @date    2017-01-25
  * 
  * @returns {Void}
@@ -219,6 +219,9 @@
         haveRequired |= PeshTools.run.filters.minRealEarningApply;
         PeshToolsDbg && console.log('minRealEarningApply', PeshTools.run.filters.minRealEarningApply, haveRequired);
 
+        haveRequired |= PeshTools.run.filters.maxBuyoutPriceApply;
+        PeshToolsDbg && console.log('maxBuyoutPriceApply', PeshTools.run.filters.maxBuyoutPriceApply, haveRequired);
+
         haveRequired |= PeshTools.run.filters.maxFullPledgeApply;
         PeshToolsDbg && console.log('maxFullPledgeApply', PeshTools.run.filters.maxFullPledgeApply, haveRequired);
 
@@ -364,6 +367,31 @@
                     PeshToolsDbg && console.info('Exclude by minRealEarning');
 
                     order.whichExclude.push(filter);
+                }
+            }
+
+
+            // Применение фильтра максимальной цены выкупа.
+            if (order.buyoutPrice)
+            {
+                if (order.buyoutPrice <= PeshTools.run.filters.maxBuyoutPrice)
+                {
+                    PeshTools.run.stats.maxBuyoutPrice++;
+
+                    if (PeshTools.run.filters.maxBuyoutPriceApply)
+                    {
+                        PeshToolsDbg && console.info('Require by maxBuyoutPrice');
+
+                        order.whichRequire.push(filter);
+                    }
+                } else
+                {
+                    if (PeshTools.run.filters.maxBuyoutPriceApply)
+                    {
+                        PeshToolsDbg && console.info('Exclude by maxBuyoutPrice');
+
+                        order.whichExclude.push(filter);
+                    }
                 }
             }
 
@@ -1205,6 +1233,13 @@
         this.$realClosingBalance = null;
 
         /**
+         * Стоимость выкупаемого товара.
+         *
+         * @type {Boolean|Number}
+         */
+        this.buyoutPrice = false;
+
+        /**
          * Объявленный заработок курьера.
          *
          * @type {Number}
@@ -1757,6 +1792,13 @@
             if ('Что везем:' === currentField.innerText)
             {
                 this.lowerText += currentValue.innerText.toLowerCase() + "\n";
+
+                var m = /\(цена (\d+)р\.\)/.exec(currentValue.innerText);
+
+                if (m)
+                {
+                    this.buyoutPrice = Number.parseInt(m[1]);
+                }
 
                 continue;
             }
@@ -2567,6 +2609,126 @@
     };
 
     // PeshTools.embedded.fns.onEarningChange = function ()
+
+
+    /**
+     * Начальная загрузка. Отрисовка фильтров. Максимальцая цена выкупа.
+     *
+     * @param {String} g
+     * @param {Object} grp
+     * @returns {Array}
+     * @since   0.6.0   2017-01-25
+     */
+    PeshTools.embedded.fns.bootstrapUIFiltersDrawBuyout = function (g, grp)
+    {
+        var elements = [];
+
+        PeshTools.run.skel.stats['maxBuyoutPrice'] = 0;
+
+        // apply
+        var dl = document.createElement('dl');
+        var dt = document.createElement('dt');
+        dt.innerHTML = 'Выкуплю';
+
+        var sub = document.createElement('sub');
+        sub.id = 'maxBuyoutPrice_cnt';
+        sub.innerHTML = '∞';
+
+        PeshTools.run.$[sub.id] = sub;
+
+        dt.appendChild(sub);
+        dl.appendChild(dt);
+
+        var dd = document.createElement('dd');
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'maxBuyoutPriceApply';
+        input.id = 'maxBuyoutPriceApply';
+        input.value = 1;
+        input.addEventListener('change', PeshTools.embedded.fns.onBuyoutChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        if (PeshTools.run.filters[input.id])
+        {
+            input.checked = true;
+        }
+
+        var label = document.createElement('label');
+        label.htmlFor = input.id;
+
+        dd.appendChild(input);
+        dd.appendChild(label);
+        dl.appendChild(dd);
+
+        elements.push(dl);
+
+        // filter value
+        var dl = document.createElement('dl');
+        var dt = document.createElement('dt');
+        dt.innerHTML = 'не дороже (руб)';
+        dl.appendChild(dt);
+
+        var dd = document.createElement('dd');
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.name = 'maxBuyoutPrice';
+        input.min = 0;
+        input.max = 10000000;
+        input.id = 'maxBuyoutPrice';
+        input.value = PeshTools.run.filters[input.id];
+
+        input.disabled = !PeshTools.run.filters['maxBuyoutPriceApply'];
+
+        input.addEventListener('change', PeshTools.embedded.fns.onBuyoutChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        dd.appendChild(input);
+        dl.appendChild(dd);
+
+        elements.push(dl);
+
+        return elements;
+    };
+
+    // PeshTools.embedded.fns.bootstrapUIFiltersDrawBuyout = function (g, grp)
+
+
+    /**
+     * Обработчик изменения значения и активности фильтра максимальной цены выкупа.
+     *
+     * @return {Void}
+     * @since   0.6.0   2017-01-25
+     */
+    PeshTools.embedded.fns.onBuyoutChange = function ()
+    {
+        PeshToolsDbg && console.log(this);
+
+        var filter = this.id;
+        var value = this.value;
+
+        if ('maxBuyoutPriceApply' === this.id)
+        {
+            PeshTools.run.$.maxBuyoutPrice.disabled = !this.checked;
+            value = !!this.checked;
+        } else
+        {
+            value = Number.parseInt(value);
+        }
+
+        PeshTools.embedded.fns.sendMessageWrapper({
+            method: 'config.save',
+            bank: 'filters',
+            name: filter,
+            value: value,
+            scheduleUpdate: true,
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.embedded.fns.onBuyoutChange = function ()
 
 
     /**
