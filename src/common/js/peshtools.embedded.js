@@ -540,6 +540,11 @@
 
         if (!PeshTools.run.isOptionsPage())
         {
+            if (PeshTools.run.config.selfAutoupdate && !/\s*peshToolsNewOrdersTrick\s*/.test(PeshTools.run.$body.className))
+            {
+                PeshTools.run.$body.className += ' peshToolsNewOrdersTrick';
+            }
+
             PeshTools.embedded.fns.sendMessageWrapper({
                 method: 'stats.push',
                 interaction: interaction,
@@ -711,6 +716,10 @@
             }
         }
 
+        if (!PeshTools.run.config.selfAutoupdate)
+        {
+            PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/\s*peshToolsNewOrdersTrick\s*/, '');
+        }
     };
 
     // PeshTools.embedded.fns.updateUI = function ()
