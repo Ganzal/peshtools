@@ -371,6 +371,28 @@
             }
 
 
+            // Применение фильтра отрицательного выходного баланса.
+            if (0 <= order.closingBalance)
+            {
+                PeshTools.run.stats.fullPledgeMathHideNegative++;
+
+                if (PeshTools.run.filters.fullPledgeMathHideNegative)
+                {
+                    PeshToolsDbg && console.info('Require by fullPledgeMathHideNegative');
+
+                    order.whichRequire.push(filter);
+                }
+            } else
+            {
+                if (PeshTools.run.filters.fullPledgeMathHideNegative)
+                {
+                    PeshToolsDbg && console.info('Exclude by fullPledgeMathHideNegative');
+
+                    order.whichExclude.push(filter);
+                }
+            }
+
+
             // Применение фильтра максимальной цены выкупа.
             if (order.buyoutPrice)
             {
@@ -1519,6 +1541,20 @@
          */
         this.whichRequire = [];
 
+        /**
+         * Прогноз выходного баланса после взятия заказа.
+         *
+         * @type {Number}
+         */
+        this.closingBalance = 0;
+
+        /**
+         * Прогноз реального выходного баланса после взятия заказа.
+         *
+         * @type {Number}
+         */
+        this.realClosingBalance = 0;
+
 
         /**
          * Очищает списки фильтров.
@@ -1578,16 +1614,16 @@
          */
         this.updateClosingBalance = function ()
         {
-            var closingBalance = PeshTools.run.courierBalanceFull - this.fullPledge;
-            var realClosingBalance = PeshTools.run.courierBalance - this.fullPledge;
+            this.closingBalance = PeshTools.run.courierBalanceFull - this.fullPledge;
+            this.realClosingBalance = PeshTools.run.courierBalance - this.fullPledge;
 
-            this.$closingBalance.innerHTML = closingBalance;
+            this.$closingBalance.innerHTML = this.closingBalance;
             this.$closingBalance.className = 'peshToolsClosingBalance' +
-                    (0 < closingBalance ? 'Posi' : 'Nega') + 'tive';
+                    (0 < this.closingBalance ? 'Posi' : 'Nega') + 'tive';
 
-            this.$realClosingBalance.innerHTML = realClosingBalance;
+            this.$realClosingBalance.innerHTML = this.realClosingBalance;
             this.$realClosingBalance.className = 'peshToolsClosingBalance' +
-                    (0 < realClosingBalance ? 'Posi' : 'Nega') + 'tive';
+                    (0 < this.realClosingBalance ? 'Posi' : 'Nega') + 'tive';
         };
 
         // this.updateClosingBalance = function ()
@@ -2744,6 +2780,7 @@
         var elements = [];
 
         PeshTools.run.skel.stats['maxFullPledge'] = 0;
+        PeshTools.run.skel.stats['fullPledgeMathHideNegative'] = 0;
 
         // display math
         var dl = document.createElement('dl');
@@ -2756,6 +2793,45 @@
         var input = document.createElement('input');
         input.type = 'checkbox';
         input.id = 'fullPledgeMathDisplay';
+        input.name = input.id;
+        input.value = 1;
+        input.addEventListener('change', PeshTools.embedded.fns.onPledgeChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        if (PeshTools.run.filters[input.id])
+        {
+            input.checked = true;
+        }
+
+        var label = document.createElement('label');
+        label.htmlFor = input.id;
+
+        dd.appendChild(input);
+        dd.appendChild(label);
+        dl.appendChild(dd);
+
+        elements.push(dl);
+
+        // hide negative
+        var dl = document.createElement('dl');
+        dl.id = 'fullPledgeMathHideNegative_dl';
+        var dt = document.createElement('dt');
+        dt.innerHTML = 'Скрывать минусовые';
+
+        var sub = document.createElement('sub');
+        sub.id = 'fullPledgeMathHideNegative_cnt';
+        sub.innerHTML = '∞';
+
+        PeshTools.run.$[sub.id] = sub;
+
+        dt.appendChild(sub);
+        dl.appendChild(dt);
+
+        var dd = document.createElement('dd');
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'fullPledgeMathHideNegative';
         input.name = input.id;
         input.value = 1;
         input.addEventListener('change', PeshTools.embedded.fns.onPledgeChange);
@@ -2920,7 +2996,7 @@
 //            PeshTools.run.$.maxFullPledgeRecharge.disabled = !this.checked;
 //            PeshTools.run.$.maxFullPledgeCommission.disabled = !this.checked;
             value = !!this.checked;
-        } else if ('fullPledgeMathDisplay' === this.id)
+        } else if ('fullPledgeMathDisplay' === this.id || 'fullPledgeMathHideNegative' === this.id)
         {
             value = !!this.checked;
         } else

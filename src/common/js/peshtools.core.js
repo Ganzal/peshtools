@@ -859,6 +859,7 @@
             "dropOther": "Bypass",
             "execStrings": false,
             "fullPledgeMathDisplay": true,
+            "fullPledgeMathHideNegative": false,
             "maxBuyoutPriceApply": false,
             "maxBuyoutPrice": 2500,
             "maxDistanceApply": false,
