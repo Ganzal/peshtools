@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-22
- * @date    2017-01-22
+ * @version 0.6.0   2017-01-25
+ * @date    2017-01-25
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -171,6 +171,10 @@
   padding: 2px;
   margin-left: 2px;
   color: #1bb06c;
+}
+#peshTools sub[data-cnt="0"] {
+  color: #b0b0b0;
+  font-size: 80%;
 }
 #peshTools fieldset {
   width: 200px;
@@ -422,6 +426,14 @@ span[id$='RealClosingBalance']:before {
 }
 #peshToolsBalance td:nth-child(2n) {
   width: 120px;
+}
+#fullPledgeMathHideNegative_dl dt {
+  width: 150px;
+}
+.peshToolsNewOrdersTrick #availOrders table.orderBlock:not([data-pesh-tools-sess]) {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */
