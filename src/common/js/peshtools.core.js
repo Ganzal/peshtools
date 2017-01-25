@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-22
- * @date    2017-01-22
+ * @version 0.6.0   2017-01-25
+ * @date    2017-01-25
  * 
  * @returns {Void}
  */
@@ -1365,66 +1365,33 @@
 
 
     /**
-     * Обработчик выбора опции "Требовать" контекстного меню.
+     * Единый обработчик выбора опции для строки в контекстном меню.
      * 
      * @param {Object} details
      * @param {Object} tab
      * @return {Void}
-     * @since   0.4.0   2017-01-14
+     * @since   0.6.0   2017-01-24
      */
-    PeshTools.core.fns.stringsOnContextMenuActionRequire_hnd = function (details, tab)
+    PeshTools.core.fns.stringsOnContextMenuAction_hnd = function (details, tab)
     {
         PeshToolsDbg && console.debug(details, tab);
 
-        PeshTools.core.fns.stringsChangeByContextMenu({
-            string: details.selectionText,
-            value: 'Require'
-        });
-    };
+        var m = PeshTools.run.cmStringQuadStateRegex.exec(details.menuItemId);
 
-    // PeshTools.core.fns.stringsOnContextMenuActionRequire_hnd = function (details, tab)
-
-
-    /**
-     * Обработчик выбора опции "Допускать" контекстного меню.
-     * 
-     * @param {Object} details
-     * @param {Object} tab
-     * @return {Void}
-     * @since   0.4.0   2017-01-14
-     */
-    PeshTools.core.fns.stringsOnContextMenuActionBypass_hnd = function (details, tab)
-    {
-        PeshToolsDbg && console.debug(details, tab);
+        if (!m)
+        {
+            return;
+        }
 
         PeshTools.core.fns.stringsChangeByContextMenu({
             string: details.selectionText,
-            value: 'Bypass'
+            value: m[1]
         });
+
+        PeshTools.core.fns.stringsUpdateContextMenu(tab.id);
     };
 
-    // PeshTools.core.fns.stringsOnContextMenuActionBypass_hnd = function (details, tab)
-
-
-    /**
-     * Обработчик выбора опции "Исключать" контекстного меню.
-     * 
-     * @param {Object} details
-     * @param {Object} tab
-     * @return {Void}
-     * @since   0.4.0   2017-01-14
-     */
-    PeshTools.core.fns.stringsOnContextMenuActionExclude_hnd = function (details, tab)
-    {
-        PeshToolsDbg && console.debug(details, tab);
-
-        PeshTools.core.fns.stringsChangeByContextMenu({
-            string: details.selectionText,
-            value: 'Exclude'
-        });
-    };
-
-    // PeshTools.core.fns.stringsOnContextMenuActionExclude_hnd = function (details, tab)
+    // PeshTools.core.fns.stringsOnContextMenuAction_hnd = function (details, tab)
 
 
     /**
@@ -1455,30 +1422,24 @@
             });
         }
 
-        if (PeshTools.run.ctxMenuStringsRequireEnabled !== data.RequireEnabled)
+        for (var s in PeshTools.run.skel.filtersQuadStates)
         {
-            PeshTools.run.ctxMenuStringsRequireEnabled = data.RequireEnabled;
-            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsRequire, {
-                enabled: data.RequireEnabled
-            });
-        }
+            if (!PeshTools.run.skel.filtersQuadStates.hasOwnProperty(s))
+            {
+                continue;
+            }
 
-        if (PeshTools.run.ctxMenuStringsBypassEnabled !== data.BypassEnabled)
-        {
-            PeshTools.run.ctxMenuStringsBypassEnabled = data.BypassEnabled;
-            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsBypass, {
-                enabled: data.BypassEnabled
-            });
-        }
+            var runKey = 'ctxMenuStrings' + s + 'Enabled';
+            var dataKey = s + 'Enabled';
 
-        if (PeshTools.run.ctxMenuStringsExcludeEnabled !== data.ExcludeEnabled)
-        {
-            PeshTools.run.ctxMenuStringsExcludeEnabled = data.ExcludeEnabled;
-            PeshToolsENV.contextMenus.update(PeshTools.run.ctxMenuStringsExclude, {
-                enabled: data.ExcludeEnabled
-            });
+            if (PeshTools.run[runKey] !== data[dataKey])
+            {
+                PeshTools.run[runKey] = data[dataKey];
+                PeshToolsENV.contextMenus.update(PeshTools.run['ctxMenuStrings' + s], {
+                    enabled: data[dataKey]
+                });
+            }
         }
-
     };
 
     // PeshTools.core.fns.stringsUpdateContextMenu = function (tabId)
@@ -1498,28 +1459,35 @@
         }
 
         var newString = PeshTools.run.selections[tabId];
+        var data = {};
+
+        for (var s in PeshTools.run.skel.filtersQuadStates)
+        {
+            if (PeshTools.run.skel.filtersQuadStates.hasOwnProperty(s))
+            {
+                data[s + 'Enabled'] = false;
+            }
+        }
 
         if ('' === newString)
         {
-            return {
-                AboutTitle: 'Пустая строка',
-                RequireEnabled: false,
-                BypassEnabled: false,
-                ExcludeEnabled: false
-            };
+            data.AboutTitle = 'Пустая строка';
+            return data;
+        }
+
+        for (var s in PeshTools.run.skel.filtersQuadStates)
+        {
+            if (PeshTools.run.skel.filtersQuadStates.hasOwnProperty(s))
+            {
+                data[s + 'Enabled'] = true;
+            }
         }
 
         if ('undefined' !== typeof PeshTools.run.strings[newString])
         {
-            var data = {
-                AboutTitle: 'Изменить',
-                RequireEnabled: true,
-                BypassEnabled: true,
-                ExcludeEnabled: true
-            };
+            data.AboutTitle = 'Изменить';
 
             data[PeshTools.run.strings[newString] + 'Enabled'] = false;
-
             return data;
         }
 
@@ -1557,12 +1525,8 @@
 //            AboutTitle.push('поглощает: ' + substrings);
 //        }
 
-        return {
-            AboutTitle: AboutTitle.join(', '),
-            RequireEnabled: true,
-            BypassEnabled: true,
-            ExcludeEnabled: true
-        };
+        data.AboutTitle = AboutTitle.join(', ');
+        return data;
     };
 
     // PeshTools.core.fns.stringsUpdateContextMenuResolve = function (tabId)
@@ -1616,35 +1580,27 @@
             });
         }
 
-        PeshTools.run.ctxMenuStringsRequireEnabled = true;
-        PeshTools.run.ctxMenuStringsRequire = PeshToolsENV.contextMenus.create({
-            parentId: PeshTools.run.ctxMenuStrings,
-            id: 'PeshToolsCMStringsRequire',
-            title: '[!] Требовать',
-            contexts: ['selection'],
-            documentUrlPatterns: urls,
-            onclick: PeshTools.core.fns.stringsOnContextMenuActionRequire_hnd
-        });
+        PeshTools.run.cmStringQuadStateRegex = new RegExp('^PeshToolsCMStrings(' + Object.keys(PeshTools.run.skel.filtersQuadStates).join('|') + ')$');
 
-        PeshTools.run.ctxMenuStringsBypassEnabled = true;
-        PeshTools.run.ctxMenuStringsBypass = PeshToolsENV.contextMenus.create({
-            parentId: PeshTools.run.ctxMenuStrings,
-            id: 'PeshToolsCMStringsBypass',
-            title: '[0] Допускать',
-            contexts: ['selection'],
-            documentUrlPatterns: urls,
-            onclick: PeshTools.core.fns.stringsOnContextMenuActionBypass_hnd
-        });
+        for (var state in PeshTools.run.skel.filtersQuadStates)
+        {
+            if (!PeshTools.run.skel.filtersQuadStates.hasOwnProperty(state))
+            {
+                continue;
+            }
 
-        PeshTools.run.ctxMenuStringsExcludeEnabled = true;
-        PeshTools.run.ctxMenuStringsExclude = PeshToolsENV.contextMenus.create({
-            parentId: PeshTools.run.ctxMenuStrings,
-            id: 'PeshToolsCMStringsExclude',
-            title: '[x] Исключать',
-            contexts: ['selection'],
-            documentUrlPatterns: urls,
-            onclick: PeshTools.core.fns.stringsOnContextMenuActionExclude_hnd
-        });
+            var data = PeshTools.run.skel.filtersQuadStates[state];
+
+            PeshTools.run['ctxMenuStrings' + state + 'Enabled'] = true;
+            PeshTools.run['ctxMenuStrings' + state] = PeshToolsENV.contextMenus.create({
+                parentId: PeshTools.run.ctxMenuStrings,
+                id: 'PeshToolsCMStrings' + state,
+                title: '[' + data.label + '] ' + data.title,
+                contexts: ['selection'],
+                documentUrlPatterns: urls,
+                onclick: PeshTools.core.fns.stringsOnContextMenuAction_hnd
+            });
+        }
 
         PeshTools.run.ctxMenuStringsSeparator1 = PeshToolsENV.contextMenus.create({
             parentId: PeshTools.run.ctxMenuStrings,
