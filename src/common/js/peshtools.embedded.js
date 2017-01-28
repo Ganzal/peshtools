@@ -2846,6 +2846,8 @@
         {
             value = Number.parseInt(value);
         }
+        
+        PeshTools.run.filters[filter] = value;
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
@@ -2966,6 +2968,8 @@
         {
             value = Number.parseInt(value);
         }
+        
+        PeshTools.run.filters[filter] = value;
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
@@ -3424,6 +3428,8 @@
             value = Number.parseFloat(value);
         }
 
+        PeshTools.run.filters[filter] = value;
+
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
             bank: 'filters',
@@ -3836,6 +3842,8 @@
         {
             value = Number.parseFloat(value);
         }
+
+        PeshTools.run.filters[filter] = value;
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
