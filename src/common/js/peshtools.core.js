@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-25
- * @date    2017-01-25
+ * @version 0.6.0   2017-01-28
+ * @date    2017-01-28
  * 
  * @returns {Void}
  */
@@ -860,6 +860,8 @@
             "execStrings": false,
             "fullPledgeMathDisplay": true,
             "fullPledgeMathHideNegative": false,
+            "fullPledgeMathReadyToRecharge": false,
+            "fullPledgeMathRecharge": 1500,
             "maxBuyoutPriceApply": false,
             "maxBuyoutPrice": 2500,
             "maxDistanceApply": false,

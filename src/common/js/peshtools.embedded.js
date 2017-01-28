@@ -372,10 +372,26 @@
 
 
             // Применение фильтра отрицательного выходного баланса.
-            if (0 <= order.closingBalance)
+            var cmpClosingBalance = order.closingBalance;
+            if (PeshTools.run.filters.fullPledgeMathReadyToRecharge)
+            {
+                cmpClosingBalance += PeshTools.run.filters.fullPledgeMathRecharge;
+            }
+
+            var closingBalanceWithRecharge = order.closingBalance + PeshTools.run.filters.fullPledgeMathRecharge;
+
+            if (0 > order.closingBalance)
             {
                 PeshTools.run.stats.fullPledgeMathHideNegative++;
+            }
 
+            if (0 > order.closingBalance && 0 <= closingBalanceWithRecharge)
+            {
+                PeshTools.run.stats.fullPledgeMathReadyToRecharge++;
+            }
+
+            if (0 <= cmpClosingBalance)
+            {
                 if (PeshTools.run.filters.fullPledgeMathHideNegative)
                 {
                     PeshToolsDbg && console.info('Require by fullPledgeMathHideNegative');
@@ -2209,13 +2225,13 @@
         var panelFilters = document.createElement('div');
         panelFilters.id = 'peshToolsFilters';
         PeshTools.run.$panelFilters = panelFilters;
-        
+
         var panelVersion = document.createElement('span');
         panelVersion.id = 'peshToolsVersion';
         panelVersion.innerHTML = PeshTools.run.nameFull;
-        
+
         panelFilters.appendChild(panelVersion);
-        
+
         var panelStickerCountdown = document.createElement('span');
         panelStickerCountdown.id = 'peshToolsStickerCountdown';
         panelStickerCountdown.innerHTML = '⌛';
@@ -2543,9 +2559,9 @@
         var panelVersion = document.createElement('span');
         panelVersion.id = 'peshToolsVersion';
         panelVersion.innerHTML = PeshTools.run.nameFull;
-        
+
         panelFilters.appendChild(panelVersion);
-        
+
         var panelStickerCountdown = document.createElement('span');
         panelStickerCountdown.id = 'peshToolsStickerCountdown';
         panelStickerCountdown.innerHTML = '⌛';
@@ -2978,6 +2994,7 @@
 
         PeshTools.run.skel.stats['maxFullPledge'] = 0;
         PeshTools.run.skel.stats['fullPledgeMathHideNegative'] = 0;
+        PeshTools.run.skel.stats['fullPledgeMathReadyToRecharge'] = 0;
 
         // display math
         var dl = document.createElement('dl');
@@ -3048,6 +3065,72 @@
         dl.appendChild(dd);
 
         elements.push(dl);
+
+        // ready to recharge
+        var dl = document.createElement('dl');
+        dl.id = 'fullPledgeMathReadyToRecharge_dl';
+        var dt = document.createElement('dt');
+        dt.innerHTML = 'Пополню';
+
+        var sub = document.createElement('sub');
+        sub.id = 'fullPledgeMathReadyToRecharge_cnt';
+        sub.innerHTML = '∞';
+
+        PeshTools.run.$[sub.id] = sub;
+
+        dt.appendChild(sub);
+        dl.appendChild(dt);
+
+        var dd = document.createElement('dd');
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'fullPledgeMathReadyToRecharge';
+        input.name = input.id;
+        input.value = 1;
+        input.addEventListener('change', PeshTools.embedded.fns.onPledgeChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        if (PeshTools.run.filters[input.id])
+        {
+            input.checked = true;
+        }
+
+        var label = document.createElement('label');
+        label.htmlFor = input.id;
+
+        dd.appendChild(input);
+        dd.appendChild(label);
+        dl.appendChild(dd);
+
+        elements.push(dl);
+
+        var dl = document.createElement('dl');
+        dl.id = 'fullPledgeMathRecharge_dl';
+        var dt = document.createElement('dt');
+        dt.innerHTML = 'на сумму (руб)';
+        dl.appendChild(dt);
+
+        var dd = document.createElement('dd');
+        var input = document.createElement('input');
+        input.type = 'number';
+        input.id = 'fullPledgeMathRecharge';
+        input.name = input.id;
+        input.min = 0;
+        input.max = 10000000;
+        input.value = PeshTools.run.filters[input.id];
+
+        input.disabled = !PeshTools.run.filters['fullPledgeMathReadyToRecharge'];
+
+        input.addEventListener('change', PeshTools.embedded.fns.onPledgeChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        dd.appendChild(input);
+        dl.appendChild(dd);
+
+        elements.push(dl);
+
 
         // apply
         var dl = document.createElement('dl');
@@ -3187,19 +3270,40 @@
         var filter = this.id;
         var value = this.value;
 
-        if ('maxFullPledgeApply' === this.id)
+        switch (this.id)
         {
-            PeshTools.run.$.maxFullPledge.disabled = !this.checked;
+            case 'maxFullPledgeApply':
+                PeshTools.run.$.maxFullPledge.disabled = !this.checked;
 //            PeshTools.run.$.maxFullPledgeRecharge.disabled = !this.checked;
 //            PeshTools.run.$.maxFullPledgeCommission.disabled = !this.checked;
-            value = !!this.checked;
-        } else if ('fullPledgeMathDisplay' === this.id || 'fullPledgeMathHideNegative' === this.id)
-        {
-            value = !!this.checked;
-        } else
-        {
-            value = Number.parseInt(value);
+                value = !!this.checked;
+                break;
+
+            case 'fullPledgeMathDisplay':
+                value = !!this.checked;
+                break;
+
+            case 'fullPledgeMathHideNegative':
+                value = !!this.checked;
+
+                var disbaleReadyToRecharge = !value;
+                var disableRecharge = !(value && PeshTools.run.filters.fullPledgeMathReadyToRecharge);
+
+                PeshTools.run.$.fullPledgeMathReadyToRecharge.disabled = disbaleReadyToRecharge;
+                PeshTools.run.$.fullPledgeMathRecharge.disabled = disableRecharge;
+                break;
+
+            case 'fullPledgeMathReadyToRecharge':
+                PeshTools.run.$.fullPledgeMathRecharge.disabled = !this.checked;
+                value = !!this.checked;
+                break;
+
+            default:
+                value = Number.parseInt(value);
+                break;
         }
+
+        PeshTools.run.filters[filter] = value;
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
@@ -4487,12 +4591,12 @@
 
         var dbgCnt = 0;
         var manifest = PeshToolsENV.runtime.getManifest();
-        
+
         PeshTools.run.manifest = manifest;
         PeshTools.run.version = (manifest.version_name ? manifest.version_name : manifest.version);
         PeshTools.run.name = manifest.name;
         PeshTools.run.nameFull = PeshTools.run.name + ', ' + PeshTools.run.version;
-        
+
         console.debug('PeshTools/Embedded [v%s]: Testing console.debug()... %d %d %d',
                 PeshTools.run.version,
                 dbgCnt++, dbgCnt++, dbgCnt++);

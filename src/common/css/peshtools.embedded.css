@@ -167,6 +167,14 @@
   background-color: #18649e;
   color: white;
 }
+#peshTools input:disabled + label {
+  color: #b0b0b0;
+  border-color: #b0b0b0;
+}
+#peshTools input:checked:disabled + label {
+  background-color: #b0b0b0;
+  color: white;
+}
 #peshTools sub {
   padding: 2px;
   margin-left: 2px;
@@ -497,6 +505,12 @@ span[id$='SummarizeSpan'] input:checked + label {
   right: 10px;
   color: #1bb06c;
   font-size: 9px;
+}
+#fullPledgeMathRecharge_dl {
+  border-bottom: 1px solid #b0b0b0;
+}
+#fullPledgeMathRecharge_dl dd {
+  padding-bottom: 3px;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */
