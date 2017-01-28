@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-28
- * @date    2017-01-28
+ * @version 0.6.0   2017-01-29
+ * @date    2017-01-29
  * 
  * @returns {Void}
  */
@@ -560,6 +560,9 @@
             {
                 PeshTools.run.$body.className += ' peshToolsNewOrdersTrick';
             }
+            
+            // Обновление отчета по отложенным заказам.
+            PeshTools.embedded.fns.updateSummary();
 
             PeshTools.embedded.fns.sendMessageWrapper({
                 method: 'stats.push',
@@ -567,9 +570,6 @@
                 data: PeshTools.run.stats
             });
         }
-
-        // Обновление отчета по отложенным заказам.
-        PeshTools.embedded.fns.updateSummary();
 
         // Сброс счетчика следующего обновления.
         window.setTimeout(function ()
