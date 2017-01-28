@@ -358,7 +358,7 @@
                 {
                     PeshToolsDbg && console.info('Require by minRealEarning');
 
-                    order.whichRequire.push(filter);
+                    order.whichRequire.push('minRealEarning');
                 }
             } else
             {
@@ -366,7 +366,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by minRealEarning');
 
-                    order.whichExclude.push(filter);
+                    order.whichExclude.push('minRealEarning');
                 }
             }
 
@@ -380,7 +380,7 @@
                 {
                     PeshToolsDbg && console.info('Require by fullPledgeMathHideNegative');
 
-                    order.whichRequire.push(filter);
+                    order.whichRequire.push('fullPledgeMathHideNegative');
                 }
             } else
             {
@@ -388,7 +388,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by fullPledgeMathHideNegative');
 
-                    order.whichExclude.push(filter);
+                    order.whichExclude.push('fullPledgeMathHideNegative');
                 }
             }
 
@@ -404,7 +404,7 @@
                     {
                         PeshToolsDbg && console.info('Require by maxBuyoutPrice');
 
-                        order.whichRequire.push(filter);
+                        order.whichRequire.push('maxBuyoutPrice');
                     }
                 } else
                 {
@@ -412,7 +412,7 @@
                     {
                         PeshToolsDbg && console.info('Exclude by maxBuyoutPrice');
 
-                        order.whichExclude.push(filter);
+                        order.whichExclude.push('maxBuyoutPrice');
                     }
                 }
             }
@@ -425,7 +425,7 @@
                 {
                     PeshToolsDbg && console.info('Require by maxFullPledge');
 
-                    order.whichRequire.push(filter);
+                    order.whichRequire.push('maxFullPledge');
                 }
             } else
             {
@@ -435,7 +435,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by maxFullPledge');
 
-                    order.whichExclude.push(filter);
+                    order.whichExclude.push('maxFullPledge');
                 }
             }
 
@@ -447,7 +447,7 @@
                 {
                     PeshToolsDbg && console.info('Require by maxDistance');
 
-                    order.whichRequire.push(filter);
+                    order.whichRequire.push('maxDistance');
                 }
             } else
             {
@@ -457,7 +457,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by maxDistance');
 
-                    order.whichExclude.push(filter);
+                    order.whichExclude.push('maxDistance');
                 }
             }
 
@@ -469,7 +469,7 @@
                 {
                     PeshToolsDbg && console.info('Require by maxWeight');
 
-                    order.whichRequire.push(filter);
+                    order.whichRequire.push('maxWeight');
                 }
             } else
             {
@@ -479,7 +479,7 @@
                 {
                     PeshToolsDbg && console.info('Exclude by maxWeight');
 
-                    order.whichExclude.push(filter);
+                    order.whichExclude.push('maxWeight');
                 }
             }
 
