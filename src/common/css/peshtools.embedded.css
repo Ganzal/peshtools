@@ -491,5 +491,12 @@ span[id$='SummarizeSpan'] input:checked + label {
 #peshToolsSummary td[colspan="4"] {
   text-align: left;
 }
+#peshToolsVersion {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  color: #1bb06c;
+  font-size: 9px;
+}
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */

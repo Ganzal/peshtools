@@ -2209,7 +2209,13 @@
         var panelFilters = document.createElement('div');
         panelFilters.id = 'peshToolsFilters';
         PeshTools.run.$panelFilters = panelFilters;
-
+        
+        var panelVersion = document.createElement('span');
+        panelVersion.id = 'peshToolsVersion';
+        panelVersion.innerHTML = PeshTools.run.nameFull;
+        
+        panelFilters.appendChild(panelVersion);
+        
         var panelStickerCountdown = document.createElement('span');
         panelStickerCountdown.id = 'peshToolsStickerCountdown';
         panelStickerCountdown.innerHTML = '⌛';
@@ -2534,6 +2540,12 @@
         panelFilters.id = 'peshToolsFilters';
         PeshTools.run.$panelFilters = panelFilters;
 
+        var panelVersion = document.createElement('span');
+        panelVersion.id = 'peshToolsVersion';
+        panelVersion.innerHTML = PeshTools.run.nameFull;
+        
+        panelFilters.appendChild(panelVersion);
+        
         var panelStickerCountdown = document.createElement('span');
         panelStickerCountdown.id = 'peshToolsStickerCountdown';
         panelStickerCountdown.innerHTML = '⌛';
@@ -4475,8 +4487,14 @@
 
         var dbgCnt = 0;
         var manifest = PeshToolsENV.runtime.getManifest();
+        
+        PeshTools.run.manifest = manifest;
+        PeshTools.run.version = (manifest.version_name ? manifest.version_name : manifest.version);
+        PeshTools.run.name = manifest.name;
+        PeshTools.run.nameFull = PeshTools.run.name + ', ' + PeshTools.run.version;
+        
         console.debug('PeshTools/Embedded [v%s]: Testing console.debug()... %d %d %d',
-                (manifest.version_name ? manifest.version_name : manifest.version),
+                PeshTools.run.version,
                 dbgCnt++, dbgCnt++, dbgCnt++);
         PeshTools.run.debugStripped = (0 === dbgCnt);
 
