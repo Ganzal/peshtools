@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-25
- * @date    2017-01-25
+ * @version 0.6.0   2017-01-28
+ * @date    2017-01-28
  * 
  * @returns {Void}
  */
@@ -551,6 +551,9 @@
                 data: PeshTools.run.stats
             });
         }
+
+        // Обновление отчета по отложенным заказам.
+        PeshTools.embedded.fns.updateSummary();
 
         // Сброс счетчика следующего обновления.
         window.setTimeout(function ()
@@ -1237,6 +1240,13 @@
         this.$body = null;
 
         /**
+         * Ссылка на HTML-элемент LABEL чекбокса откладывания заказа.
+         *
+         * @type {Null|HTMLElement}
+         */
+        this.$summarize = null;
+
+        /**
          * Ссылка на HTML-элемент SPAN обратного отсчета времени забора заказа.
          *
          * @type {Null|HTMLElement}
@@ -1699,6 +1709,7 @@
         var dropsBlock = null;
         var commissionBlock = null;
         var earningBlock = null;
+        var actionBlock = null;
 
         // Итерация строк таблицы заказа.
         for (var i in orderBody.childNodes)
@@ -1957,6 +1968,13 @@
 
                 continue;
             }
+
+
+            // Действия:
+            if ('Действия:' === currentField.innerText)
+            {
+                actionBlock = currentField;
+            }
         }
 
         // for (var i in orderBody.childNodes)
@@ -2041,6 +2059,26 @@
 
         this.$cross = td.getElementsByTagName('a')[0];
 
+        // Чекбокс откладывания заказа.
+        var summarizeSpan = document.createElement('span');
+        summarizeSpan.id = 'peshToolsExtra' + this.id + 'SummarizeSpan';
+
+        var summarizeCheckbox = document.createElement('input');
+        summarizeCheckbox.type = 'checkbox';
+        summarizeCheckbox.id = 'peshToolsExtra' + this.id + 'Summarize';
+        summarizeCheckbox.addEventListener('change', PeshTools.embedded.fns.onSummarizeChange);
+        summarizeCheckbox.dataset.orderId = this.id;
+
+        var summarizeLabel = document.createElement('label');
+        summarizeLabel.htmlFor = summarizeCheckbox.id;
+        summarizeLabel.innerHTML = '+';
+        this.$summarize = summarizeLabel;
+
+        summarizeSpan.appendChild(summarizeCheckbox);
+        summarizeSpan.appendChild(summarizeLabel);
+
+        actionBlock.appendChild(summarizeSpan);
+
 
         // Пара отметок об успешной обработке таблицы заказа.
         this.$table.dataset.peshToolsTag = Math.random();
@@ -2124,6 +2162,8 @@
             });
         }, 60000);
 
+        PeshTools.run.summary = {};
+
         var panel = document.createElement('div');
         panel.id = 'peshTools';
         panel.className = 'collapsed';
@@ -2176,6 +2216,7 @@
         PeshTools.run.$panelStickerCountdown = panelStickerCountdown;
 
         var panelBalance = PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawBalance();
+        var panelSummary = PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawSummary();
 
         panelStickerStat.appendChild(panelStickerStatVisible);
         panelStickerStat.appendChild(panelStickerStatOverall);
@@ -2185,6 +2226,7 @@
         panel.appendChild(panelSticker);
         panel.appendChild(panelFilters);
         panel.appendChild(panelBalance);
+        panel.appendChild(panelSummary);
         PeshTools.run.$body.appendChild(panel);
 
         PeshTools.run.$body.className += ' peshToolsFilters' + (PeshTools.run.config.filtersEnabled ? 'En' : 'Dis') + 'abled';
@@ -2300,6 +2342,140 @@
     };
 
     // PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawBalance = function ()
+
+
+    /**
+     * Начальная загрузка. Отрисовка сводки по отложенным заказам.
+     * 
+     * @return {Void}
+     * @since   0.6.0   2017-01-28
+     */
+    PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawSummary = function ()
+    {
+        var table = document.createElement('table');
+        table.id = "peshToolsSummary";
+        table.dataset.cnt = 0;
+        PeshTools.run.$panelSummary = table;
+
+        // row 1
+        var tr = document.createElement('tr');
+
+        // col 1-1
+        var th = document.createElement('th');
+        th.innerHTML = 'Отмечено:';
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelSummaryCnt = td;
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        // col 1-2
+        var th = document.createElement('th');
+        th.innerHTML = 'Залог:';
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelSummaryPledge = td;
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        // col 1-3
+        var th = document.createElement('th');
+        th.innerHTML = 'Заработок:';
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelSummaryEarning = td;
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        table.appendChild(tr);
+
+
+        // row 2
+        var tr = document.createElement('tr');
+
+        // col 2-1
+        var th = document.createElement('th');
+        th.innerHTML = 'Вес:';
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelSummaryWeight = td;
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        // col 2-2
+        var th = document.createElement('th');
+        th.innerHTML = 'Комиссия:';
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelSummaryCommission = td;
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        // col 2-3
+        var th = document.createElement('th');
+        th.innerHTML = 'Чистыми:';
+
+        var td = document.createElement('td');
+        td.innerHTML = 0;
+        PeshTools.run.$panelSummaryRealEarning = td;
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        table.appendChild(tr);
+
+
+        // row 3
+        var tr = document.createElement('tr');
+
+        // col 3-1 empty
+        var th = document.createElement('th');
+        th.innerHTML = '&nbsp;';
+
+        var td = document.createElement('td');
+        td.innerHTML = '&nbsp;';
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        // col 3-2 + 3-3
+        var th = document.createElement('th');
+        th.innerHTML = 'Баланс:';
+
+        var td = document.createElement('td');
+        td.colSpan = 4;
+        PeshTools.run.$panelSummaryBalance = td;
+
+        var closingBalance = document.createElement('span');
+        closingBalance.id = 'peshToolsSummaryClosingBalance';
+        PeshTools.run.$panelSummaryClosingBalance = closingBalance;
+
+        var realClosingBalance = document.createElement('span');
+        realClosingBalance.id = 'peshToolsSummaryRealClosingBalance';
+        PeshTools.run.$panelSummaryRealClosingBalance = realClosingBalance;
+
+        td.appendChild(closingBalance);
+        td.appendChild(realClosingBalance);
+
+        tr.appendChild(th);
+        tr.appendChild(td);
+
+        table.appendChild(tr);
+
+        return table;
+    };
+
+    // PeshTools.embedded.fns.bootstrapUIModeEmbeddedDrawSummary = function ()
 
 
     /**
@@ -3852,6 +4028,108 @@
     };
 
     // PeshTools.embedded.fns.onBadgeBlinkingOptionChange = function ()
+
+
+    /**
+     * Обработчик изменения отложенности заказа.
+     * 
+     * @return {Void}
+     * @since   0.6.0   2017-01-28
+     */
+    PeshTools.embedded.fns.onSummarizeChange = function ()
+    {
+        var m = /^peshToolsExtra(\d+)Summarize$/.exec(this.id);
+
+        if (!m)
+        {
+            return;
+        }
+
+        var value = !!this.checked;
+        var orderId = m[1];
+
+        var order = PeshTools.run.orders[orderId];
+
+        if ('undefined' === typeof order)
+        {
+            return;
+        }
+
+        order.$summarize.innerHTML = (value ? '-' : '+');
+        PeshTools.run.summary[orderId] = value;
+
+        PeshTools.embedded.fns.updateSummary();
+    };
+
+    // PeshTools.embedded.fns.onSummaryChange = function ()
+
+
+    /**
+     * Обновляет отчет по отложенным заказам.
+     * 
+     * @return {Void}
+     * @since   0.6.0   2017-01-28
+     */
+    PeshTools.embedded.fns.updateSummary = function ()
+    {
+        var cnt = 0;
+        var weight = 0.0;
+        var commission = 0;
+        var pledge = 0;
+        var earning = 0;
+        var realEarning = 0;
+
+        for (var orderId in PeshTools.run.summary)
+        {
+            if (!PeshTools.run.summary.hasOwnProperty(orderId))
+            {
+                continue;
+            }
+
+            if (!PeshTools.run.summary[orderId])
+            {
+                continue;
+            }
+
+            var order = PeshTools.run.orders[orderId];
+
+            if ('undefined' === typeof order)
+            {
+                continue;
+            }
+
+            cnt++;
+
+            weight += order.weight;
+            commission += order.commission;
+            pledge += order.pledge;
+            earning += order.earning;
+            realEarning += order.realEarning;
+        }
+
+        PeshTools.run.$panelSummary.dataset.cnt = cnt;
+        PeshTools.run.$panelSummaryCnt.innerHTML = cnt;
+
+        PeshTools.run.$panelSummaryWeight.innerHTML = weight.toFixed(2);
+        PeshTools.run.$panelSummaryPledge.innerHTML = pledge;
+        PeshTools.run.$panelSummaryCommission.innerHTML = commission;
+        PeshTools.run.$panelSummaryEarning.innerHTML = earning;
+        PeshTools.run.$panelSummaryRealEarning.innerHTML = realEarning;
+
+        var fullPledge = pledge + commission;
+        var closingBalance = PeshTools.run.courierBalanceFull - fullPledge;
+        var realClosingBalance = PeshTools.run.courierBalance - fullPledge;
+
+        PeshTools.run.$panelSummaryClosingBalance.innerHTML = closingBalance;
+        PeshTools.run.$panelSummaryClosingBalance.className = 'peshToolsClosingBalance' +
+                (0 < closingBalance ? 'Posi' : 'Nega') + 'tive';
+
+        PeshTools.run.$panelSummaryRealClosingBalance.innerHTML = realClosingBalance;
+        PeshTools.run.$panelSummaryRealClosingBalance.className = 'peshToolsClosingBalance' +
+                (0 < realClosingBalance ? 'Posi' : 'Nega') + 'tive';
+    };
+
+    // PeshTools.embedded.fns.updateSummary = function ()
 
 
     /**

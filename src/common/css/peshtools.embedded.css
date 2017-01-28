@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-25
- * @date    2017-01-25
+ * @version 0.6.0   2017-01-28
+ * @date    2017-01-28
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -434,6 +434,62 @@ span[id$='RealClosingBalance']:before {
   position: absolute;
   top: -9999px;
   left: -9999px;
+}
+span[id$='SummarizeSpan'] {
+  float: right;
+}
+span[id$='SummarizeSpan'] input {
+  display: none;
+}
+span[id$='SummarizeSpan'] input + label {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  border-radius: 2px;
+  background-color: #18649e;
+  color: white;
+  line-height: 24px;
+  text-align: center;
+  vertical-align: middle;
+}
+span[id$='SummarizeSpan'] input:checked + label {
+  background-color: #e01d1d;
+}
+#peshTools.expanded #peshToolsSummary,
+#peshTools.collapsed #peshToolsSummary[data-cnt="0"] {
+  display: none;
+}
+#peshTools.collapsed #peshToolsSummary:not([data-cnt="0"]) {
+  font-size: 14px;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  left: 95px;
+  height: 55px;
+  outline: 2px solid #18649e;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+#peshToolsSummary th {
+  text-align: left;
+  padding: 2px 1px 1px 4px;
+  width: 80px;
+}
+#peshToolsSummary th:first-child {
+  width: 70px;
+}
+#peshToolsSummary th:first-child + td {
+  width: 40px;
+}
+#peshToolsSummary td {
+  text-align: right;
+  padding: 2px 4px 1px 1px;
+  width: 75px;
+  border-right: 1px solid #18649e;
+}
+#peshToolsSummary td[colspan="4"] {
+  text-align: left;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */
