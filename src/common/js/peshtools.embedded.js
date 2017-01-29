@@ -1775,6 +1775,13 @@
                 this.catchOther = !(this.catchToday || this.catchTomorrow);
 
                 this.lowerText += currentValue.innerText.toLowerCase() + "\n";
+                
+                var cdb = currentValue.getElementsByTagName('b')[0];
+                if (cdb)
+                {
+                    this.$cd = cdb.parentNode;
+                    this.$cd.className += ' peshToolsCountDown';
+                }
 
                 var catchDistanceMatch = /^м\..*?(\d+\.\d)\s+км,/.exec(currentValue.innerText);
 
@@ -1787,14 +1794,6 @@
 
                 this.minDistance = Math.min(this.minDistance, catchDistance);
                 this.maxDistance = Math.max(this.maxDistance, catchDistance);
-
-                var cdb = currentValue.getElementsByTagName('b')[0];
-
-                if (cdb)
-                {
-                    this.$cd = cdb.parentNode;
-                    this.$cd.className += ' peshToolsCountDown';
-                }
 
                 continue;
             }
