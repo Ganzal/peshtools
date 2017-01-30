@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-29
- * @date    2017-01-29
+ * @version 0.7.0   2017-01-30
+ * @date    2017-01-30
  * 
  * @returns {Void}
  */
@@ -72,6 +72,7 @@
         PeshTools.run.debug = response.config.selfDebug;
         PeshToolsDbg = response.config.selfDebug;
         PeshTools.run.filters = response.filters;
+        PeshTools.run.notifications = response.notifications;
         PeshTools.run.strings = response.strings;
 
         PeshToolsDbg && console.info(PeshTools.run.selfAutoupdate, response.config.selfAutoupdate);
@@ -560,7 +561,7 @@
             {
                 PeshTools.run.$body.className += ' peshToolsNewOrdersTrick';
             }
-            
+
             // Обновление отчета по отложенным заказам.
             PeshTools.embedded.fns.updateSummary();
 
@@ -679,10 +680,19 @@
     PeshTools.embedded.fns.updateUI = function ()
     {
         PeshTools.embedded.fns.updateUIFilters();
+        PeshTools.embedded.fns.updateUINotifications();
         PeshTools.embedded.fns.updateUIStrings();
         PeshTools.embedded.fns.updateUIConfig();
 
         PeshTools.embedded.fns.updateSendStatisticsNote();
+
+        if (PeshTools.run.config.showNotifications)
+        {
+            PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/(\s*peshToolsNotifications)Dis(abled\s*)/, '$1En$2');
+        } else
+        {
+            PeshTools.run.$body.className = PeshTools.run.$body.className.replace(/(\s*peshToolsNotifications)En(abled\s*)/, '$1Dis$2');
+        }
 
         if (PeshTools.run.isOptionsPage())
         {
@@ -809,6 +819,7 @@
                 case 'propPhotoOfCertificate':
                 case 'propPhotoOfCheck':
                     PeshTools.run.$[f + value].checked = true;
+                    PeshTools.run.$[f + 'Bell'].dataset.disabled = ('Exclude' === value || 'Bypass' === value);
                     break;
             }
 
@@ -816,6 +827,26 @@
     };
 
     // PeshTools.embedded.fns.updateUIFilters = function ()
+
+
+    /**
+     * Обновляет колокольчики на панели.
+     * 
+     * @return {Void}
+     * @since   0.7.0   2017-01-30
+     */
+    PeshTools.embedded.fns.updateUINotifications = function ()
+    {
+        for (var n in PeshTools.run.notifications)
+        {
+            if ('undefined' !== typeof PeshTools.run.$[n + 'Bell'])
+            {
+                PeshTools.run.$[n + 'Bell'].checked = !!PeshTools.run.notifications[n];
+            }
+        }
+    };
+
+    // PeshTools.embedded.fns.updateUINotifications = function ()
 
 
     /**
@@ -858,6 +889,7 @@
             delete PeshTools.run.$['string' + string + 'Bypass'];
             delete PeshTools.run.$['string' + string + 'Exclude'];
             delete PeshTools.run.$['string' + string + 'Delete'];
+            delete PeshTools.run.$['string' + string + 'Bell'];
         }
 
         // Итерация списка слов для поиска добавленных.
@@ -871,7 +903,9 @@
             var dl = PeshTools.run.$['string' + string + '_dl'];
             if ('undefined' !== typeof dl)
             {
-                PeshTools.run.$['string' + string + PeshTools.run.strings[string]].checked = true;
+                var value = PeshTools.run.strings[string];
+                PeshTools.run.$['string' + string + value].checked = true;
+                PeshTools.run.$['string' + string + 'Bell'].dataset.disabled = ('Exclude' === value || 'Bypass' === value);
                 continue;
             }
 
@@ -1775,7 +1809,7 @@
                 this.catchOther = !(this.catchToday || this.catchTomorrow);
 
                 this.lowerText += currentValue.innerText.toLowerCase() + "\n";
-                
+
                 var cdb = currentValue.getElementsByTagName('b')[0];
                 if (cdb)
                 {
@@ -2699,6 +2733,23 @@
                 dd.appendChild(label);
             }
 
+            var input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = f + 'Bell';
+            input.name = input.id;
+            input.addEventListener('change', PeshTools.embedded.fns.onBellChange);
+
+            PeshTools.run.$[input.id] = input;
+
+            input.checked = !!PeshTools.run.notifications[f];
+            input.dataset.disabled = ('Exclude' === PeshTools.run.filters[f] || 'Bypass' === PeshTools.run.filters[f]);
+
+            var label = document.createElement('label');
+            label.htmlFor = f + 'Bell';
+
+            dd.appendChild(input);
+            dd.appendChild(label);
+
             dl.appendChild(dd);
 
             elements.push(dl);
@@ -2726,6 +2777,9 @@
 
         PeshTools.run.filters[filter] = value;
 
+        var bell = PeshTools.run.$[filter + 'Bell'];
+        bell.dataset.disabled = ('Exclude' === value || 'Bypass' === value);
+
         PeshToolsDbg && console.info(PeshTools.run.filters);
 
         PeshTools.embedded.fns.sendMessageWrapper({
@@ -2740,6 +2794,39 @@
     };
 
     // PeshTools.embedded.fns.onQuadStateFilterChange = function ()
+
+
+    /**
+     * Обработчик клика по колокольчику.
+     * 
+     * @return {Void}
+     * @since   0.7.0   2017-01-30
+     */
+    PeshTools.embedded.fns.onBellChange = function ()
+    {
+        PeshToolsDbg && console.log(this);
+
+        var m = PeshTools.run.bellRegex.exec(this.id);
+
+        var filter = (m[1] || '') + m[2];
+        var value = this.checked;
+
+        PeshTools.run.notifications[filter] = value;
+
+        PeshToolsDbg && console.info(PeshTools.run.notifications);
+
+        PeshTools.embedded.fns.sendMessageWrapper({
+            method: 'config.save',
+            bank: 'notifications',
+            name: filter,
+            value: value,
+            scheduleUpdate: true,
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.embedded.fns.onBellChange = function ()
 
 
     /**
@@ -2845,7 +2932,7 @@
         {
             value = Number.parseInt(value);
         }
-        
+
         PeshTools.run.filters[filter] = value;
 
         PeshTools.embedded.fns.sendMessageWrapper({
@@ -2967,7 +3054,7 @@
         {
             value = Number.parseInt(value);
         }
-        
+
         PeshTools.run.filters[filter] = value;
 
         PeshTools.embedded.fns.sendMessageWrapper({
@@ -3587,6 +3674,23 @@
             dd.appendChild(label);
         }
 
+        var input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'string' + string + 'Bell';
+        input.name = input.id;
+        input.addEventListener('change', PeshTools.embedded.fns.onBellChange);
+
+        PeshTools.run.$[input.id] = input;
+
+        input.checked = !!PeshTools.run.notifications['string' + string];
+        input.dataset.disabled = ('Exclude' === PeshTools.run.strings[string] || 'Bypass' === PeshTools.run.strings[string]);
+
+        var label = document.createElement('label');
+        label.htmlFor = input.id;
+
+        dd.appendChild(input);
+        dd.appendChild(label);
+
         var button = document.createElement('button');
         button.id = 'string' + string + 'Delete';
         button.name = button.id;
@@ -3639,6 +3743,9 @@
         var value = this.value;
 
         PeshTools.run.strings[string] = value;
+
+        var bell = PeshTools.run.$['string' + string + 'Bell'];
+        bell.dataset.disabled = ('Exclude' === value || 'Bypass' === value);
 
         PeshTools.embedded.fns.sendMessageWrapper({
             method: 'config.save',
@@ -4708,11 +4815,15 @@
         PeshTools.run.sess = response.sess;
         PeshTools.run.config = response.config;
         PeshTools.run.filters = response.filters;
+        PeshTools.run.notifications = response.notifications;
         PeshTools.run.strings = response.strings;
         PeshTools.run.debug = response.config.selfDebug;
         PeshToolsDbg = response.config.selfDebug;
         PeshTools.run.selfAutoupdate = response.config.selfAutoupdate;
         PeshTools.run.quadStateRegex = new RegExp('^(string)?(.+)(' + Object.keys(PeshTools.run.skel.filtersQuadStates).join('|') + ')$');
+        PeshTools.run.bellRegex = new RegExp('^(string)?(.+)Bell$');
+
+        PeshTools.run.$body.className += ' peshToolsNotifications' + (PeshTools.run.config.showNotifications ? 'En' : 'Dis') + 'abled';
 
         if (PeshTools.run.isOptionsPage())
         {
