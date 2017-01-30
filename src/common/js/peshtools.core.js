@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-28
- * @date    2017-01-28
+ * @version 0.7.0   2017-01-30
+ * @date    2017-01-30
  * 
  * @returns {Void}
  */
@@ -397,6 +397,11 @@
                     ga_pageview_page += '/' + request.value.toString();
                 }
 
+                if ('notifications' === request.bank && !request.value && 'undefined' !== typeof PeshTools.run.notifications[request.name])
+                {
+                    delete PeshTools.run.notifications[request.name];
+                }
+
                 PeshTools.core.fns.googleAnalyticsSendEvent({
                     'page': ga_pageview_page,
                     'referrer': request.referrer,
@@ -414,6 +419,7 @@
                     skel: PeshTools.run.skel,
                     config: PeshTools.run.config,
                     filters: PeshTools.run.filters,
+                    notifications: PeshTools.run.notifications,
                     strings: PeshTools.run.strings
                 };
 
@@ -429,6 +435,7 @@
                 var response = {
                     config: PeshTools.run.config,
                     filters: PeshTools.run.filters,
+                    notifications: PeshTools.run.notifications,
                     strings: PeshTools.run.strings,
                     interaction: !!request.interaction,
                     forceUpdate: request.forceUpdate
@@ -446,6 +453,11 @@
                 var string = request.name;
 
                 delete PeshTools.run.strings[string];
+
+                if ('undefined' !== typeof PeshTools.run.notifications['string' + string])
+                {
+                    delete PeshTools.run.notifications['string' + string];
+                }
 
                 PeshTools.core.fns.configSave();
 
@@ -737,6 +749,21 @@
         localStorage['selfConfig'] = JSON.stringify(PeshTools.run.config);
         localStorage['filtersConfig'] = JSON.stringify(PeshTools.run.filters);
         localStorage['stringsConfig'] = JSON.stringify(PeshTools.run.strings);
+
+        for (var n in PeshTools.run.notifications)
+        {
+            if (!PeshTools.run.notifications.hasOwnProperty(n))
+            {
+                continue;
+            }
+
+            if (!PeshTools.run.notifications[n])
+            {
+                delete PeshTools.run.notifications[n];
+            }
+        }
+
+        localStorage['notificationsConfig'] = JSON.stringify(PeshTools.run.notifications);
     };
 
     // PeshTools.core.fns.configSave = function ()
@@ -761,6 +788,7 @@
 
         PeshTools.run.config = {};
         PeshTools.run.filters = {};
+        PeshTools.run.notifications = {};
         PeshTools.run.strings = {};
 
         for (var p in PeshTools.core.skel.selfConfig)
@@ -781,9 +809,10 @@
 
         var cfgSelfJSON = localStorage['selfConfig'];
         var cfgFiltersJSON = localStorage['filtersConfig'];
+        var cfgNotificationsJSON = localStorage['notificationsConfig'];
         var cfgStringsJSON = localStorage['stringsConfig'];
 
-        console.log('localStorage[*Config]', cfgSelfJSON, cfgFiltersJSON, cfgStringsJSON);
+        console.log('localStorage[*Config]', cfgSelfJSON, cfgFiltersJSON, cfgNotificationsJSON, cfgStringsJSON);
 
         if ('undefined' !== typeof cfgSelfJSON)
         {
@@ -819,6 +848,15 @@
             }
         }
 
+        if ('undefined' !== typeof cfgNotificationsJSON)
+        {
+            var cfg = JSON.parse(cfgNotificationsJSON);
+
+            PeshToolsDbg && console.info('notificationsConfig', cfg);
+
+            PeshTools.run.notifications = cfg;
+        }
+
         if ('undefined' !== typeof cfgStringsJSON)
         {
             var cfg = JSON.parse(cfgStringsJSON);
@@ -841,6 +879,7 @@
         "selfConfig": {
             "filtersEnabled": true,
             "filteringStyle": "Hide",
+            "showNotifications": true,
             "selfAutoupdate": true,
             "badgeBlinking": "None",
             "hidePeshCountdowns": false,
@@ -977,6 +1016,7 @@
                     "data": {
                         "filtersEnabled": "Включить фильтрацию",
                         "filteringStyle": "Стиль фильтрации",
+                        "showNotifications": "Уведомления",
                         "selfAutoupdate": "Автообновление",
                         "badgeBlinking": "Мигание бэджа",
                         "hidePeshCountdowns": "Нет секундомерам!",
