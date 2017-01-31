@@ -655,37 +655,65 @@ span[id$='SummarizeSpan'] input:checked + label {
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 12px 12px;
     -webkit-mask-position: center;
-    mask-repeat: no-repeat;
-    mask-size: 12px 12px;
-    mask-position: center;
 }
 
 .peshToolsNotificationsEnabled #peshTools [id$='Bell'] + label {
     background-color: @peshtools-color-green;
     -webkit-mask-image: url('@{url-bell-o}');
-    mask-image: url('@{url-bell-o}');
 }
 
 .peshToolsNotificationsEnabled #peshTools [id$='Bell']:checked + label {
     background-color: @peshtools-color-basic;
     -webkit-mask-image: url('@{url-bell}');
-    mask-image: url('@{url-bell}');
 }
 
 .peshToolsNotificationsDisabled #peshTools [id$='Bell'] + label {
     background-color: @peshtools-color-grey;
     -webkit-mask-image: url('@{url-bell-slash-o}');
-    mask-image: url('@{url-bell-slash-o}');
 }
 
 .peshToolsNotificationsDisabled #peshTools [id$='Bell']:checked + label {
     -webkit-mask-image: url('@{url-bell-slash}');
-    mask-image: url('@{url-bell-slash}');
 }
 
 #peshTools [id$='Bell'][data-disabled="true"] + label,
 #peshTools [id$='Bell'][data-disabled="true"]:checked + label {
     background-color: @peshtools-color-grey;
+}
+
+.peshToolsMozilla #peshTools [id$='Bell'] + label {
+    background-color: transparent !important;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: center;
+    border: 1px dotted transparent;
+    width: 12px;
+    height: 12px;
+    padding: 1px;
+}
+
+.peshToolsMozilla.peshToolsNotificationsEnabled #peshTools [id$='Bell'] + label {
+    border-color: @peshtools-color-green;
+    background-image: url('@{url-bell-o}');
+}
+
+.peshToolsMozilla.peshToolsNotificationsEnabled #peshTools [id$='Bell']:checked + label {
+    border-color: @peshtools-color-basic;
+    background-image: url('@{url-bell}');
+}
+
+.peshToolsMozilla.peshToolsNotificationsDisabled #peshTools [id$='Bell'] + label {
+    border-color: @peshtools-color-grey;
+    background-image: url('@{url-bell-slash-o}');
+}
+
+.peshToolsMozilla.peshToolsNotificationsDisabled #peshTools [id$='Bell']:checked + label {
+    background-image: url('@{url-bell-slash}');
+}
+
+.peshToolsMozilla #peshTools [id$='Bell'][data-disabled="true"] + label,
+.peshToolsMozilla #peshTools [id$='Bell'][data-disabled="true"]:checked + label {
+    border-color: @peshtools-color-grey;
 }
 
 
