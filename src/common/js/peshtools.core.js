@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-28
- * @date    2017-01-28
+ * @version 0.7.0   2017-01-31
+ * @date    2017-01-31
  * 
  * @returns {Void}
  */
@@ -397,6 +397,11 @@
                     ga_pageview_page += '/' + request.value.toString();
                 }
 
+                if ('notifications' === request.bank && !request.value && 'undefined' !== typeof PeshTools.run.notifications[request.name])
+                {
+                    delete PeshTools.run.notifications[request.name];
+                }
+
                 PeshTools.core.fns.googleAnalyticsSendEvent({
                     'page': ga_pageview_page,
                     'referrer': request.referrer,
@@ -414,6 +419,7 @@
                     skel: PeshTools.run.skel,
                     config: PeshTools.run.config,
                     filters: PeshTools.run.filters,
+                    notifications: PeshTools.run.notifications,
                     strings: PeshTools.run.strings
                 };
 
@@ -429,6 +435,7 @@
                 var response = {
                     config: PeshTools.run.config,
                     filters: PeshTools.run.filters,
+                    notifications: PeshTools.run.notifications,
                     strings: PeshTools.run.strings,
                     interaction: !!request.interaction,
                     forceUpdate: request.forceUpdate
@@ -446,6 +453,11 @@
                 var string = request.name;
 
                 delete PeshTools.run.strings[string];
+
+                if ('undefined' !== typeof PeshTools.run.notifications['string' + string])
+                {
+                    delete PeshTools.run.notifications['string' + string];
+                }
 
                 PeshTools.core.fns.configSave();
 
@@ -500,6 +512,23 @@
                  */
             case 'noop.ping':
                 responseCallback(request.bypass);
+                break;
+
+                /**
+                 * Отображение уведомления.
+                 */
+            case 'notification.show':
+                if (!PeshTools.run.config.showNotifications)
+                {
+                    return;
+                }
+
+                request.data.sender = {
+                    windowId: sender.tab.windowId,
+                    tabId: sender.tab.id
+                };
+
+                PeshTools.core.fns.notificationParseData(request.data);
                 break;
         }
 
@@ -737,6 +766,21 @@
         localStorage['selfConfig'] = JSON.stringify(PeshTools.run.config);
         localStorage['filtersConfig'] = JSON.stringify(PeshTools.run.filters);
         localStorage['stringsConfig'] = JSON.stringify(PeshTools.run.strings);
+
+        for (var n in PeshTools.run.notifications)
+        {
+            if (!PeshTools.run.notifications.hasOwnProperty(n))
+            {
+                continue;
+            }
+
+            if (!PeshTools.run.notifications[n])
+            {
+                delete PeshTools.run.notifications[n];
+            }
+        }
+
+        localStorage['notificationsConfig'] = JSON.stringify(PeshTools.run.notifications);
     };
 
     // PeshTools.core.fns.configSave = function ()
@@ -761,6 +805,7 @@
 
         PeshTools.run.config = {};
         PeshTools.run.filters = {};
+        PeshTools.run.notifications = {};
         PeshTools.run.strings = {};
 
         for (var p in PeshTools.core.skel.selfConfig)
@@ -781,9 +826,10 @@
 
         var cfgSelfJSON = localStorage['selfConfig'];
         var cfgFiltersJSON = localStorage['filtersConfig'];
+        var cfgNotificationsJSON = localStorage['notificationsConfig'];
         var cfgStringsJSON = localStorage['stringsConfig'];
 
-        console.log('localStorage[*Config]', cfgSelfJSON, cfgFiltersJSON, cfgStringsJSON);
+        console.log('localStorage[*Config]', cfgSelfJSON, cfgFiltersJSON, cfgNotificationsJSON, cfgStringsJSON);
 
         if ('undefined' !== typeof cfgSelfJSON)
         {
@@ -819,6 +865,15 @@
             }
         }
 
+        if ('undefined' !== typeof cfgNotificationsJSON)
+        {
+            var cfg = JSON.parse(cfgNotificationsJSON);
+
+            PeshToolsDbg && console.info('notificationsConfig', cfg);
+
+            PeshTools.run.notifications = cfg;
+        }
+
         if ('undefined' !== typeof cfgStringsJSON)
         {
             var cfg = JSON.parse(cfgStringsJSON);
@@ -841,6 +896,7 @@
         "selfConfig": {
             "filtersEnabled": true,
             "filteringStyle": "Hide",
+            "showNotifications": true,
             "selfAutoupdate": true,
             "badgeBlinking": "None",
             "hidePeshCountdowns": false,
@@ -977,6 +1033,7 @@
                     "data": {
                         "filtersEnabled": "Включить фильтрацию",
                         "filteringStyle": "Стиль фильтрации",
+                        "showNotifications": "Уведомления",
                         "selfAutoupdate": "Автообновление",
                         "badgeBlinking": "Мигание бэджа",
                         "hidePeshCountdowns": "Нет секундомерам!",
@@ -1338,6 +1395,214 @@
 
 
     /**
+     * Обработчик заявки на отображение уведомлений.
+     * 
+     * @param {Object} data
+     * @return {Void}
+     * @since   0.7.0   2017-01-31
+     */
+    PeshTools.core.fns.notificationParseData = function (data)
+    {
+        PeshToolsDbg && console.info(data);
+
+        if (!data.ids.length || !PeshTools.run.config.showNotifications)
+        {
+            return;
+        }
+
+        // Фильтрация пакета данных.
+        var tmp = {
+            ids: [],
+            visibility: {},
+            texts: {}
+        };
+
+        for (var i in data.ids)
+        {
+            var orderId = data.ids[i];
+            if ('undefined' !== typeof PeshTools.run.shownNotifications[orderId])
+            {
+                PeshToolsDbg && console.info('skip notification for', orderId);
+
+                continue;
+            }
+
+            PeshTools.run.shownNotifications[orderId] = true;
+            tmp.ids.push(orderId);
+
+            if ('undefined' !== typeof data.visibility[orderId])
+            {
+                tmp.visibility[orderId] = data.visibility[orderId];
+            }
+
+            if ('undefined' !== typeof data.texts[orderId])
+            {
+                tmp.texts[orderId] = data.texts[orderId];
+            }
+        }
+
+        if (!tmp.ids.length)
+        {
+            return;
+        }
+
+        // Подготовка уведомления.
+        var nOpts = {
+            type: "basic",
+            iconUrl: PeshToolsENV.extension.getURL("/img/peshtools.png")
+        };
+
+        if (1 === tmp.ids.length)
+        {
+            var orderId = tmp.ids[0];
+
+            nOpts.title = "Заказ " + orderId + (tmp.visibility[orderId] ? '' : ' [скрыт]');
+            nOpts.message = tmp.texts[orderId];
+        } else
+        {
+            nOpts.title = "Новые заказы: " + tmp.ids.length;
+            var message = [];
+
+            for (var i in tmp.ids)
+            {
+                var orderId = tmp.ids[i];
+
+                message.push('#' + orderId + (tmp.visibility[orderId] ? '' : ' [скрыт]'));
+            }
+
+            nOpts.message = message.join(", ");
+
+        }
+
+        // Демонстрация уведомления.
+        var nId = PeshTools.core.fns.generateUUID();
+        PeshTools.run.notificationSenders[nId] = data.sender;
+        PeshToolsENV.notifications.create(nId, nOpts, PeshTools.core.fns.notificationCreationCallback);
+    };
+
+    // PeshTools.core.fns.notificationParseData = function (data)
+
+
+    /**
+     * Обработчик создания уведомления.
+     * 
+     * @param {String} notificationId
+     * @return {Void}
+     * @since   0.7.0   2017-01-31
+     */
+    PeshTools.core.fns.notificationCreationCallback = function (notificationId)
+    {
+        PeshToolsDbg && console.info('creation', notificationId);
+
+        PeshTools.core.fns.googleAnalyticsSendEvent({
+            'page': '/notifications#create',
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.core.fns.notificationCreationCallback = function (notificationId)
+
+
+    /**
+     * Обработчик клика по уведомлению.
+     * 
+     * Пробует активировать окно и вкладку, создавшие уведомление.
+     * 
+     * @param {String} notificationId
+     * @return {Void}
+     * @since   0.7.0   2017-01-31
+     */
+    PeshTools.core.fns.notificationClickCallback = function (notificationId)
+    {
+        PeshToolsDbg && console.info('click', notificationId);
+
+        PeshToolsENV.notifications.clear(notificationId);
+
+        if ('undefined' === typeof PeshTools.run.notificationSenders[notificationId])
+        {
+            return;
+        }
+        var sender = PeshTools.run.notificationSenders[notificationId];
+        var tabId = sender.tabId;
+        var windowId = sender.windowId;
+
+        delete PeshTools.run.notificationSenders[notificationId];
+
+        PeshToolsENV.windows.update(windowId, {focused: true});
+        PeshToolsENV.tabs.update(tabId, {active: true});
+
+        PeshTools.core.fns.googleAnalyticsSendEvent({
+            'page': '/notifications#click',
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.core.fns.notificationClickCallback = function (tabId)
+
+
+    /**
+     * Обработчик клика по кнопке на уведомлении.
+     * 
+     * @param {String} notificationId
+     * @param {Number} buttonIndex
+     * @return {Void}
+     * @since   0.7.0   2017-01-31
+     */
+    PeshTools.core.fns.notificationButtonClickCallback = function (notificationId, buttonIndex)
+    {
+        PeshToolsDbg && console.info('button click', notificationId, buttonIndex);
+
+        PeshToolsENV.notifications.clear(notificationId);
+
+        if ('undefined' === typeof PeshTools.run.notificationSenders[notificationId])
+        {
+            return;
+        }
+
+        delete PeshTools.run.notificationSenders[notificationId];
+
+        PeshTools.core.fns.googleAnalyticsSendEvent({
+            'page': '/notifications#button',
+            referrer: document.location.href,
+            title: document.title
+        });
+
+    };
+
+    // PeshTools.core.fns.notificationButtonClickCallback = function (tabId, buttonIndex)
+
+
+    /**
+     * Обработчик закрытия уведомления.
+     * 
+     * @param {String} notificationId
+     * @return {Void}
+     * @since   0.7.0   2017-01-31
+     */
+    PeshTools.core.fns.notificationCloseCallback = function (notificationId)
+    {
+        PeshToolsDbg && console.info('close', notificationId);
+
+        if ('undefined' !== typeof PeshTools.run.notificationSenders[notificationId])
+        {
+            return;
+        }
+
+        delete PeshTools.run.notificationSenders[notificationId];
+
+        PeshTools.core.fns.googleAnalyticsSendEvent({
+            'page': '/notifications#close',
+            referrer: document.location.href,
+            title: document.title
+        });
+    };
+
+    // PeshTools.core.fns.notificationCloseCallback = function (tabId)
+
+
+    /**
      * Вставка или обновление слова через контекстное меню.
      * 
      * @param {Object} data
@@ -1646,6 +1911,8 @@
         PeshTools.run.badgeBlinkDelay = 200;
         PeshTools.run.badgeBlinkDemo = false;
         PeshTools.run.selections = {};
+        PeshTools.run.shownNotifications = {};
+        PeshTools.run.notificationSenders = {};
 
         var manifest = PeshToolsENV.runtime.getManifest();
 
@@ -1701,6 +1968,10 @@
 //        PeshToolsENV.tabs.onRemoved.addListener(PeshTools.core.fns.onremoved_hnd);
 
         PeshToolsENV.webNavigation.onDOMContentLoaded.addListener(PeshTools.core.fns.ondomcontentloaded_hnd);
+
+        PeshToolsENV.notifications.onButtonClicked.addListener(PeshTools.core.fns.notificationButtonClickCallback);
+        PeshToolsENV.notifications.onClicked.addListener(PeshTools.core.fns.notificationClickCallback);
+        PeshToolsENV.notifications.onClosed.addListener(PeshTools.core.fns.notificationCloseCallback);
 
         PeshTools.run.healhCheckIntervalId = window.setInterval(function ()
         {

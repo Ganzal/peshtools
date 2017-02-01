@@ -12,8 +12,8 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-28
- * @date    2017-01-28
+ * @version 0.7.0   2017-01-30
+ * @date    2017-01-30
  */
 /**
  * Полезные инструменты для сайта Peshkariki.ru.
@@ -32,6 +32,32 @@
  * @version 0.1.0   2017-01-09
  * @date    2017-01-09
  */
+/**
+ * Полезные инструменты для сайта Peshkariki.ru.
+ * 
+ * @author Sergey D. Ivanov <me@ganzal.pro>
+ * @copyright Copyright (c) 2016-2017, Sergey D. Ivanov <me@ganzal.pro>
+ *                      (c) 2016-2017, PeshTools Project https://peshtools.ganzal.com/
+ *                      
+ * @package peshtools
+ * @license MIT
+ */
+/**
+ * Иконки колокольчиков.
+ *
+ * @author Dave Gandy
+ * @license SIL Open Font License
+ *
+ * @since   0.7.0   2017-01-30
+ * @version 0.7.0   2017-01-30
+ * @date    2017-01-30
+ * 
+ * @link    https://www.iconfinder.com/icons/1608872/bell_icon
+ * @link    https://www.iconfinder.com/icons/1608869/bell_o_icon
+ * @link    https://www.iconfinder.com/icons/1608871/bell_slash_icon
+ * @link    https://www.iconfinder.com/icons/1608870/bell_o_slash_icon
+ */
+/* eof: /css/contrib.bells.less */
 #peshTools {
   cursor: default;
   font-family: arial;
@@ -160,18 +186,18 @@
 #peshTools input[type='radio'] {
   display: none;
 }
-#peshTools input[type='checkbox'] + label:before {
+#peshTools input[type='checkbox']:not([id$='Bell']) + label:before {
   content: '*';
 }
-#peshTools input:checked + label {
+#peshTools input:not([id$='Bell']):checked + label {
   background-color: #18649e;
   color: white;
 }
-#peshTools input:disabled + label {
+#peshTools input:not([id$='Bell']):disabled + label {
   color: #b0b0b0;
   border-color: #b0b0b0;
 }
-#peshTools input:checked:disabled + label {
+#peshTools input:not([id$='Bell']):checked:disabled + label {
   background-color: #b0b0b0;
   color: white;
 }
@@ -511,6 +537,64 @@ span[id$='SummarizeSpan'] input:checked + label {
 }
 #fullPledgeMathRecharge_dl dd {
   padding-bottom: 3px;
+}
+#peshTools [id$='Bell'] + label {
+  border: 0;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 12px 12px;
+  -webkit-mask-position: center;
+}
+.peshToolsNotificationsEnabled #peshTools [id$='Bell'] + label {
+  background-color: #1bb06c;
+  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm-666-288h1300q-266-300-266-832 0-51-24-105t-69-103-121.5-80.5-169.5-31.5-169.5 31.5-121.5 80.5-69 103-24 105q0 532-266 832zm1482 0q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-181-75-75-181h-448q-52 0-90-38t-38-90q50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 190 28 307 158.5t117 282.5q0 139 19.5 260t50 206 74.5 158.5 85 119.5 91 88z"/></svg>');
+}
+.peshToolsNotificationsEnabled #peshTools [id$='Bell']:checked + label {
+  background-color: #18649e;
+  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm816-288q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-181-75-75-181h-448q-52 0-90-38t-38-90q50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 190 28 307 158.5t117 282.5q0 139 19.5 260t50 206 74.5 158.5 85 119.5 91 88z"/></svg>');
+}
+.peshToolsNotificationsDisabled #peshTools [id$='Bell'] + label {
+  background-color: #b0b0b0;
+  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm-537-475l877-760q-42-88-132.5-146.5t-223.5-58.5q-93 0-169.5 31.5t-121.5 80.5-69 103-24 105q0 384-137 645zm1353 187q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-180.5-74.5-75.5-180.5l149-129h757q-166-187-227-459l111-97q61 356 298 556zm86-1392l84 96q8 10 7.5 23.5t-10.5 22.5l-1872 1622q-10 8-23.5 7t-21.5-11l-84-96q-8-10-7.5-23.5t10.5-21.5l186-161q-19-32-19-66 50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 124 18 219 82.5t148 157.5l418-363q10-8 23.5-7t21.5 11z"/></svg>');
+}
+.peshToolsNotificationsDisabled #peshTools [id$='Bell']:checked + label {
+  -webkit-mask-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M1430 852q61 356 298 556 0 52-38 90t-90 38h-448q0 106-75 181t-181 75-180.5-74.5-75.5-180.5zm-534 860q16 0 16-16t-16-16q-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5zm1002-1600q8 10 7.5 23.5t-10.5 22.5l-1872 1622q-10 8-23.5 7t-21.5-11l-84-96q-8-10-7.5-23.5t10.5-21.5l186-161q-19-32-19-66 50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 124 18 219 82.5t148 157.5l418-363q10-8 23.5-7t21.5 11z"/></svg>');
+}
+#peshTools [id$='Bell'][data-disabled="true"] + label,
+#peshTools [id$='Bell'][data-disabled="true"]:checked + label {
+  background-color: #b0b0b0;
+}
+.peshToolsMozilla #peshTools [id$='Bell'] + label {
+  background-color: transparent !important;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+  background-position: center;
+  border: 1px dotted transparent;
+  width: 12px;
+  height: 12px;
+  padding: 1px;
+}
+.peshToolsMozilla.peshToolsNotificationsEnabled #peshTools [id$='Bell'] + label {
+  border-color: #1bb06c;
+  background-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm-666-288h1300q-266-300-266-832 0-51-24-105t-69-103-121.5-80.5-169.5-31.5-169.5 31.5-121.5 80.5-69 103-24 105q0 532-266 832zm1482 0q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-181-75-75-181h-448q-52 0-90-38t-38-90q50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 190 28 307 158.5t117 282.5q0 139 19.5 260t50 206 74.5 158.5 85 119.5 91 88z"/></svg>');
+}
+.peshToolsMozilla.peshToolsNotificationsEnabled #peshTools [id$='Bell']:checked + label {
+  border-color: #18649e;
+  background-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm816-288q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-181-75-75-181h-448q-52 0-90-38t-38-90q50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 190 28 307 158.5t117 282.5q0 139 19.5 260t50 206 74.5 158.5 85 119.5 91 88z"/></svg>');
+}
+.peshToolsMozilla.peshToolsNotificationsDisabled #peshTools [id$='Bell'] + label {
+  border-color: #b0b0b0;
+  background-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm-537-475l877-760q-42-88-132.5-146.5t-223.5-58.5q-93 0-169.5 31.5t-121.5 80.5-69 103-24 105q0 384-137 645zm1353 187q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-180.5-74.5-75.5-180.5l149-129h757q-166-187-227-459l111-97q61 356 298 556zm86-1392l84 96q8 10 7.5 23.5t-10.5 22.5l-1872 1622q-10 8-23.5 7t-21.5-11l-84-96q-8-10-7.5-23.5t10.5-21.5l186-161q-19-32-19-66 50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 124 18 219 82.5t148 157.5l418-363q10-8 23.5-7t21.5 11z"/></svg>');
+}
+.peshToolsMozilla.peshToolsNotificationsDisabled #peshTools [id$='Bell']:checked + label {
+  background-image: url('data:image/svg+xml;utf8,<svg height="16" viewBox="0 0 1792 1792" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M1430 852q61 356 298 556 0 52-38 90t-90 38h-448q0 106-75 181t-181 75-180.5-74.5-75.5-180.5zm-534 860q16 0 16-16t-16-16q-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5zm1002-1600q8 10 7.5 23.5t-10.5 22.5l-1872 1622q-10 8-23.5 7t-21.5-11l-84-96q-8-10-7.5-23.5t10.5-21.5l186-161q-19-32-19-66 50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 124 18 219 82.5t148 157.5l418-363q10-8 23.5-7t21.5 11z"/></svg>');
+}
+.peshToolsMozilla #peshTools [id$='Bell'][data-disabled="true"] + label,
+.peshToolsMozilla #peshTools [id$='Bell'][data-disabled="true"]:checked + label {
+  border-color: #b0b0b0;
 }
 /* eof: /css/peshtools.embedded.less */
 /*# sourceMappingURL=peshtools.embedded.css.map */

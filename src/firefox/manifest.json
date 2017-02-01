@@ -23,6 +23,7 @@
     "permissions": [
         "tabs",
         "contextMenus",
+        "notifications",
         "webNavigation",
         "http://peshkariki.ru/order/*"
     ],

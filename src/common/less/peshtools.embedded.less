@@ -13,11 +13,18 @@
  * Стили встраиваемого сценария и страницы опций.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.6.0   2017-01-28
- * @date    2017-01-28
+ * @version 0.7.0   2017-01-30
+ * @date    2017-01-30
  */
 
 @import "_variables.less";
+@import "contrib.bells.less";
+
+@url-bell-prefix: "data:image/svg+xml;utf8,";
+@url-bell: "@{url-bell-prefix}@{peshtools-contrib-bells-bell}";
+@url-bell-o: "@{url-bell-prefix}@{peshtools-contrib-bells-bell-o}";
+@url-bell-slash: "@{url-bell-prefix}@{peshtools-contrib-bells-bell-slash}";
+@url-bell-slash-o: "@{url-bell-prefix}@{peshtools-contrib-bells-bell-slash-o}";
 
 #peshTools {
     cursor: default;
@@ -192,21 +199,21 @@
     display: none;
 }
 
-#peshTools input[type='checkbox'] + label:before {
+#peshTools input[type='checkbox']:not([id$='Bell']) + label:before {
     content: '*';
 }
 
-#peshTools input:checked + label {
+#peshTools input:not([id$='Bell']):checked + label {
     background-color: @peshtools-color-basic;
     color: white;
 }
 
-#peshTools input:disabled + label {
+#peshTools input:not([id$='Bell']):disabled + label {
     color: @peshtools-color-grey;
     border-color: @peshtools-color-grey;
 }
 
-#peshTools input:checked:disabled + label {
+#peshTools input:not([id$='Bell']):checked:disabled + label {
     background-color: @peshtools-color-grey;
     color: white;
 }
@@ -637,5 +644,77 @@ span[id$='SummarizeSpan'] input:checked + label {
 #fullPledgeMathRecharge_dl dd {
     padding-bottom: 3px;
 }
+
+
+#peshTools [id$='Bell'] + label {
+    border: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 12px 12px;
+    -webkit-mask-position: center;
+}
+
+.peshToolsNotificationsEnabled #peshTools [id$='Bell'] + label {
+    background-color: @peshtools-color-green;
+    -webkit-mask-image: url('@{url-bell-o}');
+}
+
+.peshToolsNotificationsEnabled #peshTools [id$='Bell']:checked + label {
+    background-color: @peshtools-color-basic;
+    -webkit-mask-image: url('@{url-bell}');
+}
+
+.peshToolsNotificationsDisabled #peshTools [id$='Bell'] + label {
+    background-color: @peshtools-color-grey;
+    -webkit-mask-image: url('@{url-bell-slash-o}');
+}
+
+.peshToolsNotificationsDisabled #peshTools [id$='Bell']:checked + label {
+    -webkit-mask-image: url('@{url-bell-slash}');
+}
+
+#peshTools [id$='Bell'][data-disabled="true"] + label,
+#peshTools [id$='Bell'][data-disabled="true"]:checked + label {
+    background-color: @peshtools-color-grey;
+}
+
+.peshToolsMozilla #peshTools [id$='Bell'] + label {
+    background-color: transparent !important;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: center;
+    border: 1px dotted transparent;
+    width: 12px;
+    height: 12px;
+    padding: 1px;
+}
+
+.peshToolsMozilla.peshToolsNotificationsEnabled #peshTools [id$='Bell'] + label {
+    border-color: @peshtools-color-green;
+    background-image: url('@{url-bell-o}');
+}
+
+.peshToolsMozilla.peshToolsNotificationsEnabled #peshTools [id$='Bell']:checked + label {
+    border-color: @peshtools-color-basic;
+    background-image: url('@{url-bell}');
+}
+
+.peshToolsMozilla.peshToolsNotificationsDisabled #peshTools [id$='Bell'] + label {
+    border-color: @peshtools-color-grey;
+    background-image: url('@{url-bell-slash-o}');
+}
+
+.peshToolsMozilla.peshToolsNotificationsDisabled #peshTools [id$='Bell']:checked + label {
+    background-image: url('@{url-bell-slash}');
+}
+
+.peshToolsMozilla #peshTools [id$='Bell'][data-disabled="true"] + label,
+.peshToolsMozilla #peshTools [id$='Bell'][data-disabled="true"]:checked + label {
+    border-color: @peshtools-color-grey;
+}
+
 
 /* eof: /css/peshtools.embedded.less */
