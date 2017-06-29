@@ -15,8 +15,8 @@
  * Встраиваемый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.7.0   2017-01-31
- * @date    2017-01-31
+ * @version 0.8.0   2017-06-29
+ * @date    2017-06-29
  * 
  * @returns {Void}
  */
@@ -1045,9 +1045,9 @@
                     continue;
                 }
 
-                // http://peshkariki.ru/user/profile.html a.parentNode.title
+                // https://peshkariki.ru/user/profile.html a.parentNode.title
                 // Верифицированный курьер
-                if (searchCourierVerified && 'http://peshkariki.ru/user/profile.html' === a.href)
+                if (searchCourierVerified && 'https://peshkariki.ru/user/profile.html' === a.href)
                 {
                     if ('Верифицированный курьер' === a.parentNode.title)
                     {
@@ -1059,9 +1059,9 @@
                     continue;
                 }
 
-                // http://peshkariki.ru/user/balance.html a.title
+                // https://peshkariki.ru/user/balance.html a.title
                 // Ваш баланс: 0 руб.
-                if (searchCourierBalance && 'http://peshkariki.ru/user/balance.html' === a.href)
+                if (searchCourierBalance && 'https://peshkariki.ru/user/balance.html' === a.href)
                 {
                     if (/Ваш баланс: (-?\d+) руб\./.test(a.title))
                     {
@@ -1074,9 +1074,9 @@
                     continue;
                 }
 
-                // http://peshkariki.ru/user/freezebalance.html a.href
+                // https://peshkariki.ru/user/freezebalance.html a.href
                 // Залог: 0р
-                if (searchTotalPledge && 'http://peshkariki.ru/user/freezebalance.html' === a.href)
+                if (searchTotalPledge && 'https://peshkariki.ru/user/freezebalance.html' === a.href)
                 {
                     if (/Залог: \d+р/.test(a.innerText))
                     {

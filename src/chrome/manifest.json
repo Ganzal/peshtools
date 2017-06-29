@@ -12,7 +12,7 @@
     "content_scripts": [
         {
             "matches": [ 
-                "http://peshkariki.ru/order/*"
+                "https://peshkariki.ru/order/*"
             ],
             "css": [
                 "/css/peshtools.embedded.css"
@@ -25,7 +25,7 @@
         "contextMenus",
         "notifications",
         "webNavigation",
-        "http://peshkariki.ru/order/*"
+        "https://peshkariki.ru/order/*"
     ],
 
     "browser_action": {

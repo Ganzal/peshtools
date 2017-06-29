@@ -15,8 +15,8 @@
  * Фоновый сценарий PeshTools.
  * 
  * @since   0.1.0   2016-12-16
- * @version 0.7.0   2017-01-31
- * @date    2017-01-31
+ * @version 0.8.0   2017-06-29
+ * @date    2017-06-29
  * 
  * @returns {Void}
  */
@@ -551,7 +551,7 @@
     {
         PeshToolsENV.tabs.query({
             status: "complete",
-            url: 'http://peshkariki.ru/order/courOrders.html*'
+            url: 'https://peshkariki.ru/order/courOrders.html*'
         }, function (tabs)
         {
             for (var i in tabs)
@@ -707,7 +707,7 @@
 
         PeshToolsDbg && console.log('#Dom', details.tabId);
 
-        if (!/^http:\/\/peshkariki.ru\/order\/courOrders\.html/.test(details.url))
+        if (!/^https:\/\/peshkariki.ru\/order\/courOrders\.html/.test(details.url))
         {
             return;
         }
@@ -739,7 +739,7 @@
         PeshToolsENV.tabs.get(tabId, function (tab) {
             PeshToolsDbg && console.log('tab updated', tabId, tab.url, tab);
 
-            if ('complete' === tab.status && /^http:\/\/peshkariki.ru\/order\/courOrders\.html/.test(tab.url))
+            if ('complete' === tab.status && /^https:\/\/peshkariki.ru\/order\/courOrders\.html/.test(tab.url))
             {
                 PeshToolsDbg && console.info('executing "update.run"');
 
@@ -1274,7 +1274,7 @@
         // Выборка вкладок со списком заказов.
         PeshToolsENV.tabs.query({
             status: "complete",
-            url: 'http://peshkariki.ru/order/courOrders.html*'
+            url: 'https://peshkariki.ru/order/courOrders.html*'
         }, function (tabs)
         {
             for (var i in tabs)
@@ -1816,7 +1816,7 @@
     PeshTools.core.fns.bootstrapContextMenu = function ()
     {
         var urls = [
-            'http://peshkariki.ru/order/courOrders.html*'
+            'https://peshkariki.ru/order/courOrders.html*'
         ];
 
         PeshTools.run.ctxMenuRoot = PeshToolsENV.contextMenus.create({
